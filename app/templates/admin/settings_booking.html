@@ -1,0 +1,25 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Configurações · Agendamento{% endblock %}
+{% block content %}{% include "admin/_settings_tabs.html" %}
+<div class="panel-card panel-body col-xl-9">
+  <form method="post" novalidate>
+    {{ form.csrf_token }}
+    {{ field(form.booking_enabled) }}
+    <div class="row">
+      <div class="col-md-4">{{ field(form.min_notice_hours) }}</div>
+      <div class="col-md-4">{{ field(form.max_days_ahead) }}</div>
+      <div class="col-md-4">{{ field(form.slot_step_minutes) }}</div>
+      <div class="col-md-4">{{ field(form.buffer_minutes) }}</div>
+      <div class="col-md-4">{{ field(form.patient_cancel_hours) }}</div>
+      <div class="col-md-4">{{ field(form.reminder_hours) }}</div>
+    </div>
+    {{ field(form.require_email) }}
+    {{ field(form.ask_birth_date) }}
+    {{ field(form.whatsapp_links_enabled) }}
+    <hr>
+    <div class="row"><div class="col-md-6">{{ field(form.retention_years) }}</div><div class="col-md-6">{{ field(form.privacy_version, help="Atualize ao revisar a Política de Privacidade; a versão é registrada a cada agendamento.") }}</div></div>
+    <button class="btn btn-primary">Salvar</button>
+  </form>
+</div>
+{% endblock %}

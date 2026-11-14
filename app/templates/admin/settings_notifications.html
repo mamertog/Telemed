@@ -1,0 +1,15 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Configurações · Notificações{% endblock %}
+{% block content %}{% include "admin/_settings_tabs.html" %}
+{% if not provider_ok %}<div class="alert alert-warning col-xl-9">{{ icon('exclamation-triangle') }} O serviço de e-mail não está configurado. Os agendamentos funcionam normalmente; as mensagens passarão a ser enviadas quando as variáveis <code>EMAIL_PROVIDER</code>, <code>EMAIL_API_KEY</code> e <code>EMAIL_FROM</code> forem definidas.</div>{% endif %}
+<p class="small text-muted-2">Variáveis disponíveis: <code>{nome}</code> (primeiro nome), <code>{data}</code>, <code>{hora}</code>, <code>{servico}</code>, <code>{codigo}</code>, <code>{link}</code>, <code>{medica}</code>. <strong>Não inclua informações clínicas.</strong></p>
+<form method="post" novalidate class="col-xl-9">
+  {{ form.csrf_token }}
+  {% for kind, label, subj, body in groups %}
+  <div class="panel-card mb-3"><div class="panel-head"><h2>{{ label }}</h2></div>
+    <div class="panel-body">{{ field(subj) }}{{ field(body) }}</div></div>
+  {% endfor %}
+  <button class="btn btn-primary">Salvar modelos</button>
+</form>
+{% endblock %}

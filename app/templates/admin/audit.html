@@ -1,0 +1,19 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Auditoria{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Registros de auditoria</h1>
+<p class="small text-muted-2 mb-3">Ações administrativas registradas sem conteúdo clínico. O IP é armazenado apenas como hash.</p>
+<form class="d-flex gap-2 mb-3" method="get"><label class="visually-hidden" for="acao">Filtrar por ação</label>
+  <input class="form-control form-control-sm w-auto" id="acao" name="acao" value="{{ action }}" placeholder="Filtrar por ação (ex.: paciente)">
+  <button class="btn btn-sm btn-primary">Filtrar</button></form>
+<div class="panel-card table-responsive">
+  <table class="table table-sm align-middle">
+    <thead><tr><th scope="col">Data/hora</th><th scope="col">Usuário</th><th scope="col">Ação</th><th scope="col">Entidade</th><th scope="col">Identificador</th></tr></thead>
+    <tbody>{% for l in page.items %}
+      <tr><td class="text-nowrap">{{ l.created_at|datahora }}</td><td>{{ l.user.name if l.user else '—' }}</td><td><code>{{ l.action }}</code></td><td>{{ l.entity_type or '—' }}</td><td class="small text-muted-2">{{ l.entity_id or '—' }}</td></tr>
+    {% else %}<tr><td colspan="5" class="text-muted-2">Nenhum registro.</td></tr>{% endfor %}</tbody>
+  </table>
+</div>
+{{ pagination(page, 'admin.audit_logs') }}
+{% endblock %}

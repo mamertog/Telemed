@@ -1,0 +1,18 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Configurações · Contato{% endblock %}
+{% block content %}{% include "admin/_settings_tabs.html" %}
+<div class="panel-card panel-body col-xl-9">
+  <p class="small text-muted-2">Campos vazios não são exibidos no site. Não cadastre dados fictícios.</p>
+  <form method="post" novalidate>
+    {{ form.csrf_token }}
+    <div class="row"><div class="col-md-8">{{ field(form.address) }}</div><div class="col-md-4">{{ field(form.address_complement) }}</div></div>
+    <div class="row"><div class="col-md-4">{{ field(form.city) }}</div><div class="col-md-4">{{ field(form.phone) }}</div><div class="col-md-4">{{ field(form.whatsapp) }}</div></div>
+    {{ field(form.email) }}
+    {{ field(form.hours_text, help="Ex.: Segunda a sexta, das 8h às 18h.") }}
+    {{ field(form.map_url) }}
+    <fieldset class="mb-3"><legend class="form-label fs-6">Modalidades oferecidas</legend>{{ field(form.modality_presencial) }}{{ field(form.modality_teleconsulta, help="Habilite somente se a teleconsulta estiver estruturada conforme as normas vigentes.") }}</fieldset>
+    <button class="btn btn-primary">Salvar</button>
+  </form>
+</div>
+{% endblock %}

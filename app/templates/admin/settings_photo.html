@@ -1,0 +1,26 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Configurações · Foto{% endblock %}
+{% block content %}{% include "admin/_settings_tabs.html" %}
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="portrait">{% if asset %}<img src="{{ url_for('public.doctor_photo') }}?v={{ asset.sha256[:8] }}" alt="Foto atual">{% else %}<div class="hero-monogram" aria-hidden="true">JR</div>{% endif %}</div>
+    {% if asset %}<form method="post" action="{{ url_for('admin.settings_photo_delete') }}" class="mt-2" data-confirm="Remover a foto?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger">Remover foto</button></form>{% endif %}
+  </div>
+  <div class="col-md-8">
+    <div class="panel-card panel-body">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {{ form.csrf_token }}
+        {{ field(form.photo, help="A imagem é redimensionada e os metadados (inclusive localização) são removidos. Armazenada no banco de dados.") }}
+        <p class="small text-muted-2">Prefira uma foto vertical, com o rosto centralizado e boa iluminação. Ela aparecerá na página inicial e em Sobre.</p>
+        <img id="photoPreview" class="photo-preview mb-3" alt="Prévia da foto selecionada" hidden>
+        <p id="photoStatus" class="small" role="status"></p>
+        {{ field(form.authorized) }}
+        <button class="btn btn-primary">{{ icon('camera-video') }} Enviar foto</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}{{ super() }}<script src="{{ url_for('static', filename='js/photo.js') }}" defer></script>{% endblock %}

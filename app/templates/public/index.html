@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}{{ site.doctor_name }} · Medicina de Família e Comunidade{% endblock %}
+{% block content %}
+<section class="hero" aria-labelledby="hero-titulo">
+  <div class="container py-5 py-lg-6">
+    <div class="row align-items-center g-5 py-lg-5">
+      <div class="col-lg-7">
+        <span class="eyebrow mb-3">Medicina de Família e Comunidade</span>
+        <h1 id="hero-titulo" class="mb-4">{{ site.hero_title }}</h1>
+        <p class="lead mb-4">{{ site.hero_subtitle }}</p>
+        <div class="d-flex flex-column flex-sm-row gap-3 mb-4">
+          <a class="btn btn-primary btn-lg" href="{{ url_for('booking.start') }}">{{ icon('calendar-check') }} Agendar consulta</a>
+          <a class="btn btn-outline-primary btn-lg" href="{{ url_for('public.about') }}">Conheça a médica</a>
+        </div>
+        <ul class="hero-points">
+          <li>{{ icon('chat-heart') }}Escuta qualificada</li>
+          <li>{{ icon('shield-check') }}Foco em prevenção</li>
+          <li>{{ icon('tree') }}Acompanhamento contínuo</li>
+        </ul>
+      </div>
+      <div class="col-lg-5">
+        <div class="hero-figure">
+          <div class="hero-arch">
+            {% if has_photo %}
+              <img src="{{ url_for('public.doctor_photo') }}" alt="Fotografia de {{ site.doctor_name }}" width="440" height="550" fetchpriority="high">
+            {% else %}
+              <div class="hero-monogram" aria-hidden="true">JR</div>
+              <svg class="hero-leaf" viewBox="0 0 200 120" aria-hidden="true"><path d="M100 118C60 100 22 70 10 18c40 2 78 26 90 70 12-44 50-68 90-70-12 52-50 82-90 100z"/></svg>
+            {% endif %}
+          </div>
+          <div class="hero-badge">
+            {{ icon('journal-medical', 'icon-lg') }}
+            <div><strong class="d-block">{{ site.doctor_name }}</strong><span class="text-muted-2">{{ site.crm }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="apresentacao">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-6 reveal">
+        <span class="eyebrow mb-3">Apresentação</span>
+        <h2 id="apresentacao" class="mb-4">Uma médica para acompanhar você ao longo do tempo</h2>
+        <p class="text-muted-2">{{ site.about_intro }}</p>
+        <a href="{{ url_for('public.about') }}" class="fw-semibold text-decoration-none">Saiba mais sobre a formação e a abordagem {{ icon('arrow-right') }}</a>
+      </div>
+      <div class="col-lg-6 reveal">
+        <div class="d-grid gap-3">
+          <div class="credential"><span class="icon-bubble">{{ icon('journal-medical') }}</span><div><strong>Formação</strong><p class="mb-0 text-muted-2">{{ site.graduation }}</p></div></div>
+          <div class="credential"><span class="icon-bubble">{{ icon('people') }}</span><div><strong>Residência médica</strong><p class="mb-0 text-muted-2">{{ site.residency }}</p></div></div>
+          <div class="credential"><span class="icon-bubble">{{ icon('shield-check') }}</span><div><strong>Registro profissional</strong><p class="mb-0 text-muted-2">{{ site.crm }}{% if site.rqe and site.rqe_confirmed %} · RQE {{ site.rqe }}{% endif %}</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-sage" aria-labelledby="mfc">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-5 reveal">
+        <span class="eyebrow mb-3">A especialidade</span>
+        <h2 id="mfc" class="mb-4">O que é Medicina de Família e Comunidade?</h2>
+        <p class="text-muted-2">É a área da medicina dedicada ao cuidado da pessoa como um todo — e não apenas de uma doença ou de um órgão. O médico de família acolhe a maior parte das necessidades de saúde, acompanha cada pessoa em todas as fases da vida e coordena o cuidado com outros profissionais quando necessário.</p>
+        <p class="quote-block mt-4 mb-0">“Conhecer a pessoa é tão importante quanto conhecer a doença.”</p>
+      </div>
+      <div class="col-lg-7 reveal">
+        <div class="pillars">
+          <div class="pillar"><div><h3>Cuidado centrado na pessoa</h3><p>Decisões construídas em conjunto, respeitando valores, preferências e o contexto de vida de cada paciente.</p></div></div>
+          <div class="pillar"><div><h3>Integralidade</h3><p>Atenção a aspectos físicos, emocionais e sociais da saúde, de forma articulada.</p></div></div>
+          <div class="pillar"><div><h3>Longitudinalidade</h3><p>Um vínculo que se fortalece com o tempo e permite perceber mudanças e agir cedo.</p></div></div>
+          <div class="pillar"><div><h3>Coordenação do cuidado</h3><p>Organização dos encaminhamentos e da comunicação com outros profissionais de saúde.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="acompanhamentos">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow mb-3">Cuidado ao longo da vida</span>
+      <h2 id="acompanhamentos">Principais tipos de acompanhamento</h2>
+      <p>Situações frequentemente acompanhadas pela Medicina de Família e Comunidade.</p>
+    </div>
+    <div class="row g-4">
+      {% for ic, title, text in care_areas %}
+      <div class="col-md-6 col-lg-4 reveal">
+        <article class="card-soft">
+          <span class="icon-bubble">{{ icon(ic) }}</span>
+          <h3>{{ title }}</h3>
+          <p>{{ text }}</p>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-5"><a class="btn btn-sage" href="{{ url_for('public.services') }}">Ver atendimentos {{ icon('arrow-right') }}</a></div>
+  </div>
+</section>
+
+<section class="section section-alt" aria-labelledby="beneficios">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-5 reveal">
+        <span class="eyebrow mb-3">Por que acompanhar</span>
+        <h2 id="beneficios" class="mb-3">Benefícios do cuidado longitudinal</h2>
+        <p class="text-muted-2">Ter uma médica que conhece sua história torna o cuidado mais seguro, mais eficiente e mais humano.</p>
+      </div>
+      <div class="col-lg-7 reveal">
+        <ul class="info-list">
+          <li>{{ icon('check-circle', 'icon-lg') }}<div><strong>Prevenção no momento certo</strong><p class="mb-0 text-muted-2">Rastreamentos e orientações adequados a cada fase da vida.</p></div></li>
+          <li>{{ icon('check-circle', 'icon-lg') }}<div><strong>Menos exames e encaminhamentos desnecessários</strong><p class="mb-0 text-muted-2">Decisões baseadas no conhecimento da sua história e em evidências.</p></div></li>
+          <li>{{ icon('check-circle', 'icon-lg') }}<div><strong>Continuidade</strong><p class="mb-0 text-muted-2">Acompanhamento de condições de saúde ao longo do tempo, sem recomeçar a cada consulta.</p></div></li>
+          <li>{{ icon('check-circle', 'icon-lg') }}<div><strong>Relação de confiança</strong><p class="mb-0 text-muted-2">Um espaço para falar com tranquilidade sobre o que importa para você.</p></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if site.address or site.hours_text %}
+<section class="section" aria-labelledby="local">
+  <div class="container">
+    <div class="row g-4">
+      {% if site.address %}
+      <div class="col-md-6 reveal">
+        <div class="card-soft">
+          <span class="icon-bubble">{{ icon('geo-alt') }}</span>
+          <h2 id="local" class="h3 mt-3">Localização</h2>
+          <p>{{ site.address }}{% if site.address_complement %}, {{ site.address_complement }}{% endif %}{% if site.city %}<br>{{ site.city }}{% endif %}</p>
+          {% if site.map_url %}<a class="btn btn-sage btn-sm mt-3" href="{{ site.map_url }}" target="_blank" rel="noopener">Abrir no mapa {{ icon('arrow-right') }}</a>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+      {% if site.hours_text %}
+      <div class="col-md-6 reveal">
+        <div class="card-soft">
+          <span class="icon-bubble">{{ icon('clock') }}</span>
+          <h2 class="h3 mt-3">Horários de atendimento</h2>
+          <p class="mb-0">{{ site.hours_text|e|replace('\n', '<br>'|safe) }}</p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section {{ 'section-sage' if not (site.address or site.hours_text) else 'pt-0' }}" aria-labelledby="faq">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-4 reveal">
+        <span class="eyebrow mb-3">Dúvidas</span>
+        <h2 id="faq">Perguntas frequentes</h2>
+      </div>
+      <div class="col-lg-8 reveal">
+        <div class="accordion" id="faqAcc">
+          {% for q, a in faq %}
+          <div class="accordion-item">
+            <h3 class="accordion-header" id="fh{{ loop.index }}">
+              <button class="accordion-button {{ 'collapsed' if not loop.first }}" type="button" data-bs-toggle="collapse" data-bs-target="#fc{{ loop.index }}" aria-expanded="{{ 'true' if loop.first else 'false' }}" aria-controls="fc{{ loop.index }}">{{ q }}</button>
+            </h3>
+            <div id="fc{{ loop.index }}" class="accordion-collapse collapse {{ 'show' if loop.first }}" aria-labelledby="fh{{ loop.index }}" data-bs-parent="#faqAcc">
+              <div class="accordion-body">{{ a }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pb-5 pt-2">
+  <div class="container">
+    <div class="cta-band reveal">
+      <div class="row align-items-center g-4 position-relative" >
+        <div class="col-lg-8">
+          <h2 class="mb-2">Vamos cuidar da sua saúde juntos?</h2>
+          <p class="mb-0">Escolha o melhor dia e horário. A solicitação leva menos de dois minutos.</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+          <a class="btn btn-light btn-lg" href="{{ url_for('booking.start') }}">{{ icon('calendar-check') }} Agendar consulta</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

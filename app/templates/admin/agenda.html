@@ -1,0 +1,90 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% from "admin/_month.html" import month_grid with context %}
+{% block title %}Calendário{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+  <h1 class="h3 mb-0">Calendário</h1>
+  <div class="d-flex flex-wrap gap-2">
+    <div class="btn-group" role="group" aria-label="Visualização">
+      {% for v, l in [('dia','Dia'),('semana','Semana'),('mes','Mês')] %}
+      <a class="btn btn-sm {{ 'btn-primary' if view == v else 'btn-sage' }}" href="{{ url_for('admin.agenda', view=v, data=ref.isoformat()) }}" {% if view == v %}aria-current="page"{% endif %}>{{ l }}</a>{% endfor %}
+    </div>
+    {% if current_user.can('agenda.manage') and current_user.can('patients.view') %}
+    <a class="btn btn-sm btn-primary" href="{{ url_for('admin.appointment_new', data=ref.isoformat()) }}">{{ icon('plus-lg') }} Novo</a>{% endif %}
+  </div>
+</div>
+
+{% if view == 'mes' %}
+  <div class="panel-card">
+    <div class="panel-head"><h2>{{ month.label }}</h2>
+      <div class="btn-group btn-group-sm">
+        <a class="btn btn-sage" href="{{ url_for('admin.agenda', view='mes', data=month.prev.isoformat()) }}" aria-label="Mês anterior">{{ icon('chevron-left') }}</a>
+        <a class="btn btn-sage" href="{{ url_for('admin.agenda', view='mes', data=today.isoformat()) }}">Hoje</a>
+        <a class="btn btn-sage" href="{{ url_for('admin.agenda', view='mes', data=month.next.isoformat()) }}" aria-label="Próximo mês">{{ icon('chevron-right') }}</a>
+      </div></div>
+    <div class="panel-body">{{ month_grid(month, today) }}</div>
+  </div>
+{% else %}
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <a class="btn btn-sm btn-sage" href="{{ url_for('admin.agenda', view=view, data=prev.isoformat()) }}" aria-label="Anterior">{{ icon('chevron-left') }}</a>
+    <a class="btn btn-sm btn-sage" href="{{ url_for('admin.agenda', view=view, data=today.isoformat()) }}">Hoje</a>
+    <a class="btn btn-sm btn-sage" href="{{ url_for('admin.agenda', view=view, data=next.isoformat()) }}" aria-label="Próximo">{{ icon('chevron-right') }}</a>
+    <h2 class="h5 mb-0 ms-2">{{ label }}</h2>
+    <form class="ms-auto d-flex gap-2" method="get">
+      <input type="hidden" name="view" value="{{ view }}">
+      <label class="visually-hidden" for="irdata">Ir para data</label>
+      <input class="form-control form-control-sm" type="date" id="irdata" name="data" value="{{ ref.isoformat() }}">
+      <button class="btn btn-sm btn-sage">Ir</button>
+    </form>
+  </div>
+  {% if view == 'semana' %}
+  <div class="week-grid">
+    {% for day, appts in days %}
+    <section class="week-col {{ 'is-today' if day == today }}" aria-label="{{ weekdays[day.weekday()] }} {{ day.strftime('%d/%m') }}">
+      <h3><a class="text-decoration-none text-reset" href="{{ url_for('admin.agenda', view='dia', data=day.isoformat()) }}">{{ weekdays_short[day.weekday()]|capitalize }} {{ day.strftime('%d/%m') }}</a></h3>
+      {% for a in appts %}
+        <a class="appt-chip st-{{ a.status }}" href="{{ url_for('admin.appointment_detail', appt_id=a.id) }}">
+          <strong>{{ a.start_at|hora }}–{{ a.end_at|hora }}</strong><br>{{ a.patient.full_name }}<br><span class="text-muted-2">{{ a.status_label }}</span></a>
+      {% else %}<p class="small text-muted-2 p-2 mb-0">Sem agendamentos</p>{% endfor %}
+    </section>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="row g-4">
+    <div class="col-xl-8">
+      <div class="panel-card">
+        <div class="panel-head"><h2>Grade do dia</h2><span class="small text-muted-2">Intervalos de {{ site.slot_step_minutes }} min</span></div>
+        {% if rows %}
+          {% for r in rows %}
+          <div class="day-row">
+            <div class="t">{{ r.start|hora }}</div>
+            <div class="c">
+              {% for a in r.appts %}<a class="appt-chip st-{{ a.status }} m-0" href="{{ url_for('admin.appointment_detail', appt_id=a.id) }}">{{ a.start_at|hora }} · {{ a.patient.full_name }} · {{ a.status_label }}</a>{% endfor %}
+              {% if r.blocked %}<span class="slot-blocked">{{ icon('slash-circle') }} Bloqueado ({{ r.blocked[0].reason }})</span>
+              {% elif not r.appts %}<span class="slot-free">{{ icon('check-circle') }} Livre</span>
+                {% if current_user.can('agenda.manage') and current_user.can('patients.view') %}<a class="small ms-2" href="{{ url_for('admin.appointment_new', data=ref.isoformat()) }}">agendar</a>{% endif %}{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}<p class="panel-body text-muted-2 mb-0">Não há disponibilidade configurada para este dia da semana.</p>{% endif %}
+      </div>
+    </div>
+    <div class="col-xl-4">
+      <div class="panel-card">
+        <div class="panel-head"><h2>Todos os agendamentos do dia</h2></div>
+        {% if appts %}
+        <ul class="list-group list-group-flush">
+          {% for a in appts %}<li class="list-group-item"><a class="d-flex justify-content-between text-decoration-none text-reset" href="{{ url_for('admin.appointment_detail', appt_id=a.id) }}"><span>{{ a.start_at|hora }} — {{ a.patient.full_name }}</span>{{ status_badge(a.status) }}</a></li>{% endfor %}
+        </ul>
+        {% else %}<p class="panel-body text-muted-2 mb-0">Nenhum agendamento.</p>{% endif %}
+      </div>
+      {% if exceptions %}
+      <div class="panel-card mt-3"><div class="panel-head"><h2>Bloqueios</h2></div>
+        <ul class="list-group list-group-flush">{% for x in exceptions %}<li class="list-group-item small">{{ x.start_at|datahora }} → {{ x.end_at|datahora }} · {{ x.reason }}</li>{% endfor %}</ul></div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

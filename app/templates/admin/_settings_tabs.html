@@ -1,0 +1,6 @@
+<h1 class="h3 mb-3">Configurações</h1>
+<ul class="nav settings-tabs gap-1 mb-4">
+  {% for key, label, ep, perm in [('contato','Contato e localização','admin.settings_contact','settings.manage'),('textos','Textos e identidade','admin.settings_texts','settings.manage'),('agendamento','Agendamento','admin.settings_booking','settings.manage'),('notificacoes','Notificações','admin.settings_notifications','settings.manage'),('foto','Foto','admin.settings_photo','settings.manage'),('profissional','Dados profissionais','admin.settings_professional','settings.professional')] %}
+    {% if current_user.can(perm) %}<li class="nav-item"><a class="nav-link {{ 'active' if tab == key }}" {% if tab == key %}aria-current="page"{% endif %} href="{{ url_for(ep) }}">{{ label }}</a></li>{% endif %}
+  {% endfor %}
+</ul>

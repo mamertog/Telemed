@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Termos de Uso{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow mb-3">Termos</span>
+    <h1 class="mb-3">Termos de Uso</h1>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="prose">
+      <h2>1. Finalidade do site</h2>
+      <p>Este site apresenta informações institucionais sobre {{ site.doctor_name }} ({{ site.crm }}) e permite a solicitação de consultas. O conteúdo tem caráter informativo e <strong>não substitui a avaliação médica</strong>.</p>
+
+      <h2>2. Urgências e emergências</h2>
+      <p>O agendamento online não é adequado para situações de urgência ou emergência. Nesses casos, procure o serviço de emergência mais próximo ou ligue para o SAMU (192).</p>
+
+      <h2>3. Solicitação de agendamento</h2>
+      <p>A solicitação feita pelo site fica sujeita à confirmação. Os horários exibidos refletem a disponibilidade no momento da consulta e podem ser alterados até a conclusão da solicitação. Informe dados verdadeiros e de sua titularidade ou de pessoa pela qual seja legalmente responsável.</p>
+
+      <h2>4. Cancelamento</h2>
+      <p>O cancelamento on-line pode ser feito até {{ site.patient_cancel_hours }} hora(s) antes do horário agendado, pelo link recebido ou pela página de consulta de agendamento. Após esse prazo, entre em contato com o consultório.</p>
+
+      <h2>5. Uso adequado</h2>
+      <p>É proibido utilizar o site para fins ilícitos, enviar solicitações automatizadas, tentar acessar áreas restritas ou comprometer a segurança do sistema.</p>
+
+      <h2>6. Privacidade</h2>
+      <p>O tratamento de dados pessoais segue a <a href="{{ url_for('public.privacy') }}">Política de Privacidade</a>.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

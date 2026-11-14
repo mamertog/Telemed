@@ -1,0 +1,23 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Reagendar {{ appt.reference }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small"><li class="breadcrumb-item"><a href="{{ url_for('admin.appointments') }}">Agendamentos</a></li><li class="breadcrumb-item"><a href="{{ url_for('admin.appointment_detail', appt_id=appt.id) }}">{{ appt.reference }}</a></li><li class="breadcrumb-item active" aria-current="page">Reagendar</li></ol></nav>
+<h1 class="h3 mb-1">Reagendar consulta</h1>
+<p class="text-muted-2 mb-4">{{ appt.patient.full_name }} · {{ appt.service.name }} · atualmente em {{ appt.start_at|datahora }}</p>
+<div class="panel-card panel-body col-lg-7">
+  <form method="post" novalidate>
+    {{ form.csrf_token }}
+    <div class="row">
+      <div class="col-sm-6">{{ field(form.date) }}</div>
+      <div class="col-sm-6">{{ field(form.time) }}</div>
+    </div>
+    <div id="slotSuggestions" class="mb-3" data-url="{{ url_for('admin.api_slots') }}" data-service="{{ appt.service_id }}"
+         data-date-field="{{ form.date.id }}" data-time-field="{{ form.time.id }}" data-exclude="{{ appt.id }}"></div>
+    {{ field(form.allow_outside_rules) }}
+    {{ field(form.notify) }}
+    <button class="btn btn-primary">{{ icon('arrow-repeat') }} Confirmar reagendamento</button>
+    <a class="btn btn-link" href="{{ url_for('admin.appointment_detail', appt_id=appt.id) }}">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

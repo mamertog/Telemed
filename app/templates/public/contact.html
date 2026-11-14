@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Contato e localização{% endblock %}
+{% block description %}Contato, localização e horários de atendimento de {{ site.doctor_name }}.{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow mb-3">Contato</span>
+    <h1 class="mb-3">Contato e localização</h1>
+    <p>Para solicitar uma consulta, utilize o agendamento online. Não envie informações de saúde pelos canais de contato.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-6">
+        {% set any_contact = site.phone or site.whatsapp or site.email or site.address or site.hours_text %}
+        {% if any_contact %}
+        <ul class="info-list">
+          {% if site.phone %}<li>{{ icon('telephone', 'icon-lg') }}<div><strong class="d-block">Telefone</strong><a href="tel:+55{{ site.phone }}">{{ site.phone|telefone }}</a></div></li>{% endif %}
+          {% if wa_public %}<li>{{ icon('whatsapp', 'icon-lg') }}<div><strong class="d-block">WhatsApp</strong><a href="{{ wa_public }}" target="_blank" rel="noopener">{{ site.whatsapp|telefone }}</a></div></li>{% endif %}
+          {% if site.email %}<li>{{ icon('envelope', 'icon-lg') }}<div><strong class="d-block">E-mail</strong><a href="mailto:{{ site.email }}">{{ site.email }}</a></div></li>{% endif %}
+          {% if site.address %}<li>{{ icon('geo-alt', 'icon-lg') }}<div><strong class="d-block">Endereço</strong>{{ site.address }}{% if site.address_complement %}, {{ site.address_complement }}{% endif %}{% if site.city %}<br>{{ site.city }}{% endif %}
+            {% if site.map_url %}<br><a href="{{ site.map_url }}" target="_blank" rel="noopener">Ver no mapa</a>{% endif %}</div></li>{% endif %}
+          {% if site.hours_text %}<li>{{ icon('clock', 'icon-lg') }}<div><strong class="d-block">Horário de atendimento</strong>{{ site.hours_text|e|replace('\n', '<br>'|safe) }}</div></li>{% endif %}
+          {% if site.modality_presencial or site.modality_teleconsulta %}<li>{{ icon('camera-video', 'icon-lg') }}<div><strong class="d-block">Modalidades</strong>
+            {% if site.modality_presencial %}Presencial{% endif %}{% if site.modality_presencial and site.modality_teleconsulta %} e {% endif %}{% if site.modality_teleconsulta %}Teleconsulta{% endif %}</div></li>{% endif %}
+        </ul>
+        {% else %}
+        <div class="placeholder-note">{{ icon('info-circle') }} Os canais de contato e o endereço serão divulgados em breve. Enquanto isso, você pode solicitar sua consulta pelo agendamento online.</div>
+        {% endif %}
+      </div>
+      <div class="col-lg-6">
+        <div class="cta-band h-100 d-flex flex-column justify-content-center">
+          <div class="position-relative">
+            <h2 class="mb-3">Agende pelo site</h2>
+            <p class="mb-4">Veja os horários disponíveis e solicite sua consulta a qualquer hora do dia.</p>
+            <a class="btn btn-light btn-lg" href="{{ url_for('booking.start') }}">{{ icon('calendar-check') }} Agendar consulta</a>
+            <p class="small mt-4 mb-0">Já agendou? <a class="text-white" href="{{ url_for('booking.lookup') }}">Consulte ou cancele seu agendamento</a>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Configurações · Textos{% endblock %}
+{% block content %}{% include "admin/_settings_tabs.html" %}
+<div class="panel-card panel-body col-xl-9">
+  <form method="post" novalidate>
+    {{ form.csrf_token }}
+    {{ field(form.hero_title) }}
+    {{ field(form.hero_subtitle) }}
+    {{ field(form.about_intro, help="Siga as normas de publicidade médica: sem promessas de resultado, sem sensacionalismo.") }}
+    {{ field(form.about_approach) }}
+    {{ field(form.theme, help="Paletas pré-definidas com contraste adequado (WCAG AA).") }}
+    <button class="btn btn-primary">Salvar</button>
+  </form>
+</div>
+{% endblock %}

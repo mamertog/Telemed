@@ -1,0 +1,75 @@
+{% from "_macros.html" import flashes with context %}<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}Painel{% endblock %} · Painel administrativo</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="admin-body">
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+<div class="admin-shell">
+  {% set ep = request.endpoint or '' %}
+  <nav class="admin-side" id="adminSide" aria-label="Menu do painel">
+    <a class="brand" href="{{ url_for('admin.dashboard') }}"><span class="brand-mark" aria-hidden="true">JR</span>
+      <span><span class="brand-name">Painel</span><span class="brand-crm">{{ site.doctor_name }}</span></span></a>
+    <a class="side-link {{ 'active' if ep == 'admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">{{ icon('grid-1x2') }} Visão geral</a>
+    {% if current_user.can('agenda.view') %}
+      <div class="side-label">Agenda</div>
+      <a class="side-link {{ 'active' if ep == 'admin.agenda' }}" href="{{ url_for('admin.agenda') }}">{{ icon('calendar3') }} Calendário</a>
+      <a class="side-link {{ 'active' if ep.startswith('admin.appointment') }}" href="{{ url_for('admin.appointments') }}">{{ icon('clipboard-check') }} Agendamentos</a>
+      <a class="side-link {{ 'active' if ep.startswith('admin.availability') }}" href="{{ url_for('admin.availability') }}">{{ icon('clock') }} Disponibilidade</a>
+      <a class="side-link {{ 'active' if ep.startswith('admin.exception') }}" href="{{ url_for('admin.exceptions') }}">{{ icon('slash-circle') }} Bloqueios e férias</a>
+    {% endif %}
+    {% if current_user.can('patients.view') %}
+      <div class="side-label">Cadastros</div>
+      <a class="side-link {{ 'active' if ep.startswith('admin.patient') }}" href="{{ url_for('admin.patients') }}">{{ icon('people') }} Pacientes</a>
+    {% endif %}
+    {% if current_user.can('services.manage') %}
+      <a class="side-link {{ 'active' if ep.startswith('admin.service') }}" href="{{ url_for('admin.services') }}">{{ icon('heart-pulse') }} Atendimentos</a>
+    {% endif %}
+    {% if current_user.can('settings.manage') or current_user.can('settings.professional') or current_user.can('users.manage') or current_user.can('audit.view') or current_user.can('settings.technical') %}
+      <div class="side-label">Administração</div>
+    {% endif %}
+    {% if current_user.can('settings.manage') %}
+      <a class="side-link {{ 'active' if ep.startswith('admin.settings') }}" href="{{ url_for('admin.settings_contact') }}">{{ icon('gear') }} Configurações</a>
+    {% endif %}
+    {% if current_user.can('users.manage') %}
+      <a class="side-link {{ 'active' if ep.startswith('admin.user') }}" href="{{ url_for('admin.users') }}">{{ icon('person-plus') }} Usuários</a>
+    {% endif %}
+    {% if current_user.can('audit.view') %}
+      <a class="side-link {{ 'active' if ep == 'admin.audit_logs' }}" href="{{ url_for('admin.audit_logs') }}">{{ icon('journal-medical') }} Auditoria</a>
+    {% endif %}
+    {% if current_user.can('settings.technical') %}
+      <a class="side-link {{ 'active' if ep == 'admin.system' }}" href="{{ url_for('admin.system') }}">{{ icon('activity') }} Sistema</a>
+    {% endif %}
+    <div class="side-label">Site</div>
+    <a class="side-link" href="{{ url_for('public.index') }}" target="_blank" rel="noopener">{{ icon('house-heart') }} Ver site público</a>
+  </nav>
+  <div class="admin-main">
+    <header class="admin-top">
+      <button class="btn btn-sm btn-sage d-lg-none" type="button" id="sideToggle" aria-controls="adminSide" aria-expanded="false" aria-label="Abrir menu">{{ icon('list') }}</button>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <span class="small text-muted-2 d-none d-sm-inline">{{ current_user.name }} · {{ current_user.role_label }}</span>
+        <a class="btn btn-sm btn-sage" href="{{ url_for('auth.change_password') }}">{{ icon('key') }}<span class="d-none d-md-inline"> Senha</span></a>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-primary">{{ icon('box-arrow-right') }} Sair</button>
+        </form>
+      </div>
+    </header>
+    <main class="admin-content" id="conteudo" tabindex="-1">
+      {{ flashes() }}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/site.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

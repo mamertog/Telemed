@@ -1,0 +1,37 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}{{ 'Gerenciar conta' if u else 'Nova conta' }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small"><li class="breadcrumb-item"><a href="{{ url_for('admin.users') }}">Usuários</a></li><li class="breadcrumb-item active" aria-current="page">{{ u.name if u else 'Nova conta' }}</li></ol></nav>
+<h1 class="h3 mb-4">{{ u.name if u else 'Nova conta' }}</h1>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="panel-card panel-body">
+      <form method="post" novalidate autocomplete="off">
+        {{ form.csrf_token }}
+        {{ field(form.name) }}
+        {% if not u %}{{ field(form.email) }}{% else %}<p><strong>E-mail:</strong> {{ u.email }}</p>{% endif %}
+        {{ field(form.role) }}
+        {% if u %}{{ field(form.is_active_account) }}{% else %}{{ field(form.password, help="Mínimo de 12 caracteres. Oriente o usuário a trocá-la no primeiro acesso.") }}{% endif %}
+        <button class="btn btn-primary">Salvar</button>
+      </form>
+    </div>
+  </div>
+  {% if u and u.id != current_user.id %}
+  <div class="col-lg-5">
+    <div class="panel-card panel-body">
+      <h2 class="h6">Segurança da conta</h2>
+      <p class="small text-muted-2">MFA: {{ 'configurado' if u.mfa_enabled else 'pendente (será configurado no próximo login)' }}</p>
+      <form method="post" action="{{ url_for('admin.user_reset_mfa', uid=u.id) }}" data-confirm="Redefinir o MFA desta conta?" class="mb-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger">Redefinir MFA</button></form>
+      <form method="post" action="{{ url_for('admin.user_reset_link', uid=u.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-primary">Gerar link de redefinição de senha</button></form>
+      {% if reset_link %}
+      <div class="mt-3"><label class="form-label small" for="resetLink">Link (válido por 1 hora, uso único). Envie por canal seguro:</label>
+        <div class="input-group input-group-sm"><input class="form-control" id="resetLink" readonly value="{{ reset_link }}"><button class="btn btn-sage" type="button" data-copy="#resetLink">Copiar</button></div></div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field with context %}
+{% block title %}Consultar agendamento{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<section class="section section-sage">
+  <div class="container">
+    <div class="booking-shell narrow p-4 p-md-5 mx-auto">
+      <h1 class="h2 mb-2">Consultar agendamento</h1>
+      <p class="text-muted-2 mb-4">Informe o código de referência recebido e o telefone utilizado na solicitação.</p>
+      <form method="post" novalidate>
+        {{ form.csrf_token }}
+        {{ field(form.reference, help="Exemplo: ABCD-2345") }}
+        {{ field(form.phone) }}
+        <button class="btn btn-primary">{{ icon('search') }} Consultar</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

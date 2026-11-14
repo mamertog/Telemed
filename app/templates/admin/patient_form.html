@@ -1,0 +1,25 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}{{ 'Editar paciente' if p else 'Novo paciente' }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small"><li class="breadcrumb-item"><a href="{{ url_for('admin.patients') }}">Pacientes</a></li><li class="breadcrumb-item active" aria-current="page">{{ 'Editar' if p else 'Novo' }}</li></ol></nav>
+<h1 class="h3 mb-4">{{ 'Editar cadastro' if p else 'Novo paciente' }}</h1>
+{% if dups %}
+<div class="alert alert-warning">{{ icon('exclamation-triangle') }} Cadastros com o mesmo telefone ou e-mail:
+  <ul class="mb-0">{% for d in dups %}<li><a href="{{ url_for('admin.patient_detail', pid=d.id) }}" target="_blank">{{ d.full_name }}</a> — {{ d.phone }}{% if d.email %} · {{ d.email }}{% endif %}</li>{% endfor %}</ul>
+  Se não for a mesma pessoa, marque a confirmação abaixo.</div>
+{% endif %}
+<div class="panel-card panel-body col-lg-8">
+  <form method="post" novalidate>
+    {{ form.csrf_token }}
+    {{ field(form.full_name) }}
+    <div class="row"><div class="col-sm-6">{{ field(form.phone) }}</div><div class="col-sm-6">{{ field(form.email) }}</div></div>
+    <div class="row"><div class="col-sm-6">{{ field(form.birth_date, help="Somente se necessário.") }}</div><div class="col-sm-6">{{ field(form.status) }}</div></div>
+    {{ field(form.whatsapp_opt_in, help="Registre apenas se o paciente autorizou expressamente.") }}
+    {% if dups %}{{ field(form.confirm_duplicate) }}{% endif %}
+    <p class="small text-muted-2">Não registre sintomas, diagnósticos ou outras informações clínicas neste cadastro.</p>
+    <button class="btn btn-primary">Salvar</button>
+    <a class="btn btn-link" href="{{ url_for('admin.patient_detail', pid=p.id) if p else url_for('admin.patients') }}">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Sistema{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Status do sistema</h1>
+<div class="panel-card col-xl-8">
+  <dl class="row panel-body mb-0">
+    <dt class="col-sm-5">Banco de dados (PostgreSQL)</dt><dd class="col-sm-7">{{ '✔ Conectado' if db_ok else '✖ Indisponível' }}</dd>
+    <dt class="col-sm-5">Versão do esquema (migração)</dt><dd class="col-sm-7"><code>{{ revision or '—' }}</code></dd>
+    <dt class="col-sm-5">Ambiente</dt><dd class="col-sm-7">{{ env }}</dd>
+    <dt class="col-sm-5">HTTPS forçado</dt><dd class="col-sm-7">{{ 'Sim' if https else 'Não' }}</dd>
+    <dt class="col-sm-5">Serviço de e-mail</dt><dd class="col-sm-7">{{ email_provider }} — {{ 'configurado' if email_ok else 'não configurado' }}</dd>
+    <dt class="col-sm-5">Armazenamento do rate limit</dt><dd class="col-sm-7"><code>{{ ratelimit.split('://')[0] }}</code></dd>
+  </dl>
+</div>
+<p class="small text-muted-2 mt-3">Credenciais e chaves são configuradas exclusivamente por variáveis de ambiente no Render e não são exibidas aqui.</p>
+{% endblock %}

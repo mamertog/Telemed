@@ -1,0 +1,58 @@
+{% macro field(f, help=None, class_="", label=True) -%}
+  {%- if f.type == "BooleanField" -%}
+  <div class="form-check mb-3 {{ class_ }}">
+    {{ f(class_="form-check-input" + (" is-invalid" if f.errors else ""), **({"aria-describedby": f.id ~ "-err"} if f.errors else {})) }}
+    <label class="form-check-label" for="{{ f.id }}">{{ f.label.text }}</label>
+    {% if help %}<div class="form-text">{{ help }}</div>{% endif %}
+    {% for e in f.errors %}<div class="invalid-feedback" id="{{ f.id }}-err">{{ e }}</div>{% endfor %}
+  </div>
+  {%- elif f.type in ("HiddenField", "CSRFTokenField") -%}
+    {{ f() }}
+  {%- else -%}
+  <div class="mb-3 {{ class_ }}">
+    {% if label %}<label class="form-label" for="{{ f.id }}">{{ f.label.text }}{% if f.flags.required %} <span class="text-danger" aria-hidden="true">*</span>{% endif %}</label>{% endif %}
+    {% set css = "form-select" if f.type == "SelectField" else "form-control" %}
+    {% set describedby = (f.id ~ "-help " if help else "") ~ (f.id ~ "-err" if f.errors else "") %}
+    {% set attrs = {"class_": css + (" is-invalid" if f.errors else "")} %}
+    {% if describedby.strip() %}{% set _ = attrs.update({"aria-describedby": describedby.strip()}) %}{% endif %}
+    {% if f.errors %}{% set _ = attrs.update({"aria-invalid": "true"}) %}{% endif %}
+    {{ f(**attrs) }}
+    {% if help %}<div class="form-text" id="{{ f.id }}-help">{{ help }}</div>{% endif %}
+    {% for e in f.errors %}<div class="invalid-feedback" id="{{ f.id }}-err">{{ e }}</div>{% endfor %}
+  </div>
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro status_badge(status) -%}
+  <span class="status-badge status-{{ status }}">{{ status_labels.get(status, status) }}</span>
+{%- endmacro %}
+
+{% macro pagination(page, endpoint) -%}
+  {% if page.pages > 1 %}
+  <nav aria-label="Paginação" class="mt-3">
+    <ul class="pagination pagination-sm mb-0">
+      {% set args = request.args.to_dict() %}
+      {% if page.has_prev %}{% set _ = args.update(page=page.prev_num) %}
+        <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, **args) }}">Anterior</a></li>{% endif %}
+      <li class="page-item disabled"><span class="page-link">Página {{ page.page }} de {{ page.pages }}</span></li>
+      {% if page.has_next %}{% set _ = args.update(page=page.next_num) %}
+        <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, **args) }}">Próxima</a></li>{% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+{%- endmacro %}
+
+{% macro flashes() -%}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-area" role="status" aria-live="polite">
+      {% for cat, msg in messages %}
+      <div class="alert alert-{{ 'info' if cat == 'message' else cat }} alert-dismissible fade show" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+{%- endmacro %}

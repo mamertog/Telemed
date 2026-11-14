@@ -1,0 +1,24 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}{{ 'Editar' if svc else 'Novo' }} atendimento{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small"><li class="breadcrumb-item"><a href="{{ url_for('admin.services') }}">Atendimentos</a></li><li class="breadcrumb-item active" aria-current="page">{{ svc.name if svc else 'Novo' }}</li></ol></nav>
+<h1 class="h3 mb-4">{{ 'Editar atendimento' if svc else 'Novo atendimento' }}</h1>
+<div class="panel-card panel-body col-lg-8">
+  <form method="post" novalidate>
+    {{ form.csrf_token }}
+    {{ field(form.name) }}
+    {{ field(form.description, help="Texto exibido no site. Siga as normas de publicidade médica: sem promessas de resultado.") }}
+    <div class="row">
+      <div class="col-sm-4">{{ field(form.duration_minutes) }}</div>
+      <div class="col-sm-4">{{ field(form.price) }}</div>
+      <div class="col-sm-4">{{ field(form.position) }}</div>
+    </div>
+    {{ field(form.icon) }}
+    {{ field(form.show_price) }}
+    {{ field(form.active) }}
+    <button class="btn btn-primary">Salvar</button>
+    <a class="btn btn-link" href="{{ url_for('admin.services') }}">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

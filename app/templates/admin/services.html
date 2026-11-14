@@ -1,0 +1,31 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Atendimentos{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-2">
+  <h1 class="h3 mb-0">Tipos de atendimento</h1>
+  <a class="btn btn-primary" href="{{ url_for('admin.service_form') }}">{{ icon('plus-lg') }} Novo atendimento</a>
+</div>
+<p class="text-muted-2 small mb-3">Somente atendimentos ativos aparecem no site e no agendamento online. Revise descrições, durações e valores antes de ativar.</p>
+<div class="panel-card table-responsive">
+  <table class="table align-middle">
+    <thead><tr><th scope="col">Ordem</th><th scope="col">Atendimento</th><th scope="col">Duração</th><th scope="col">Valor</th><th scope="col">Situação</th><th scope="col"><span class="visually-hidden">Ações</span></th></tr></thead>
+    <tbody>{% for s in services %}
+      <tr>
+        <td>{{ s.position }}</td>
+        <td><strong>{{ s.name }}</strong><br><span class="small text-muted-2">{{ s.description|truncate(90) }}</span></td>
+        <td>{{ s.duration_minutes }} min</td>
+        <td>{% if s.price is not none %}R$ {{ '%.2f'|format(s.price)|replace('.', ',') }}{% if not s.show_price %} <span class="small text-muted-2">(oculto)</span>{% endif %}{% else %}—{% endif %}</td>
+        <td>{% if s.active %}<span class="badge bg-success-subtle text-success-emphasis">Ativo</span>{% else %}<span class="badge text-bg-light">Inativo</span>{% endif %}</td>
+        <td class="text-end text-nowrap">
+          <a class="btn btn-sm btn-sage" href="{{ url_for('admin.service_form', sid=s.id) }}">{{ icon('pencil') }} Editar</a>
+          <form class="d-inline" method="post" action="{{ url_for('admin.service_toggle', sid=s.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm {{ 'btn-outline-danger' if s.active else 'btn-outline-primary' }}">{{ 'Desativar' if s.active else 'Ativar' }}</button>
+          </form>
+        </td>
+      </tr>{% else %}<tr><td colspan="6" class="text-muted-2">Nenhum atendimento cadastrado.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

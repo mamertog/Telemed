@@ -1,0 +1,58 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}{{ p.full_name }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small"><li class="breadcrumb-item"><a href="{{ url_for('admin.patients') }}">Pacientes</a></li><li class="breadcrumb-item active" aria-current="page">{{ p.full_name }}</li></ol></nav>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <h1 class="h3 mb-0">{{ p.full_name }}</h1>
+  <div class="d-flex gap-2">
+    {% if current_user.can('patients.edit') %}<a class="btn btn-outline-primary" href="{{ url_for('admin.patient_edit', pid=p.id) }}">{{ icon('pencil') }} Editar cadastro</a>{% endif %}
+    {% if current_user.can('agenda.manage') %}<a class="btn btn-primary" href="{{ url_for('admin.appointment_new', paciente=p.id) }}">{{ icon('calendar-check') }} Agendar</a>{% endif %}
+  </div>
+</div>
+{% if dups %}
+<div class="alert alert-warning">{{ icon('exclamation-triangle') }} Possível cadastro duplicado (mesmo telefone ou e-mail):
+  {% for d in dups %}<a href="{{ url_for('admin.patient_detail', pid=d.id) }}">{{ d.full_name }}</a>{{ ', ' if not loop.last }}{% endfor %}</div>
+{% endif %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="kpi"><div><div class="kpi-value">{{ stats.total }}</div><div class="kpi-label">Agendamentos (total)</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="kpi"><div><div class="kpi-value">{{ stats.scheduled }}</div><div class="kpi-label">Ativos</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="kpi"><div><div class="kpi-value">{{ stats.done }}</div><div class="kpi-label">Concluídos</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="kpi"><div><div class="kpi-value fs-6">{{ stats.next.start_at|datahora if stats.next else '—' }}</div><div class="kpi-label">Próxima consulta</div></div></div></div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="panel-card mb-4">
+      <div class="panel-head"><h2>Dados cadastrais</h2></div>
+      <dl class="row panel-body mb-0">
+        <dt class="col-5">Telefone</dt><dd class="col-7">{{ p.phone }}</dd>
+        <dt class="col-5">E-mail</dt><dd class="col-7">{{ p.email or '—' }}</dd>
+        <dt class="col-5">Nascimento</dt><dd class="col-7">{{ p.birth_date.strftime('%d/%m/%Y') if p.birth_date else '—' }}</dd>
+        <dt class="col-5">WhatsApp</dt><dd class="col-7">{{ 'Autorizado' if p.whatsapp_opt_in else 'Não autorizado' }}</dd>
+        <dt class="col-5">Situação</dt><dd class="col-7">{{ p.status|capitalize }}</dd>
+        <dt class="col-5">Cadastrado em</dt><dd class="col-7">{{ p.created_at|data }}</dd>
+        <dt class="col-5">Atualizado em</dt><dd class="col-7 mb-0">{{ p.updated_at|datahora }}</dd>
+      </dl>
+    </div>
+    <div class="panel-card">
+      <div class="panel-head"><h2>Registros de privacidade</h2></div>
+      {% if privacy %}<ul class="list-group list-group-flush small">
+        {% for r in privacy %}<li class="list-group-item">{{ r.created_at|datahora }} — {{ r.record_type|replace('_', ' ') }} (v{{ r.document_version }}){% if not r.granted %} — revogado{% endif %}</li>{% endfor %}
+      </ul>{% else %}<p class="panel-body small text-muted-2 mb-0">Nenhum registro.</p>{% endif %}
+    </div>
+    <p class="small text-muted-2 mt-3">Este módulo é um cadastro administrativo. Não registre informações clínicas aqui.</p>
+  </div>
+  <div class="col-lg-7">
+    <div class="panel-card table-responsive">
+      <div class="panel-head"><h2>Histórico administrativo de agendamentos</h2></div>
+      <table class="table align-middle">
+        <thead><tr><th scope="col">Data</th><th scope="col">Atendimento</th><th scope="col">Código</th><th scope="col">Status</th></tr></thead>
+        <tbody>{% for a in appts %}
+          <tr><td>{% if current_user.can('agenda.view') %}<a href="{{ url_for('admin.appointment_detail', appt_id=a.id) }}">{{ a.start_at|datahora }}</a>{% else %}{{ a.start_at|datahora }}{% endif %}</td>
+            <td>{{ a.service.name }}</td><td><code>{{ a.reference }}</code></td><td>{{ status_badge(a.status) }}</td></tr>
+        {% else %}<tr><td colspan="4" class="text-muted-2">Sem agendamentos.</td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

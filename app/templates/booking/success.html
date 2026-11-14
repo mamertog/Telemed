@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Solicitação registrada{% endblock %}
+{% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block content %}
+<section class="section section-sage">
+  <div class="container">
+    <div class="booking-shell narrow p-4 p-md-5 mx-auto text-center">
+      <div class="success-mark">{{ icon('check-circle') }}</div>
+      <h1 class="h2 mb-3">Solicitação registrada!</h1>
+      <p class="text-muted-2 mb-4">Recebemos sua solicitação de consulta. Ela será analisada e confirmada pela equipe{% if appt.patient.email %}, e você receberá as atualizações por e-mail{% endif %}.</p>
+      <p class="mb-1 small text-muted-2">Código de referência</p>
+      <p class="ref-code mb-4" id="refCode">{{ appt.reference }}</p>
+      <div class="summary-box text-start mx-auto mb-4">
+        <dl class="row mb-0">
+          <dt class="col-sm-4">Atendimento</dt><dd class="col-sm-8">{{ appt.service.name }}</dd>
+          <dt class="col-sm-4">Data</dt><dd class="col-sm-8">{{ appt.start_at|data_extenso }}</dd>
+          <dt class="col-sm-4">Horário</dt><dd class="col-sm-8">{{ appt.start_at|hora }}</dd>
+          <dt class="col-sm-4">Modalidade</dt><dd class="col-sm-8">{{ 'Teleconsulta' if appt.modality == 'teleconsulta' else 'Presencial' }}</dd>
+          <dt class="col-sm-4">Status</dt><dd class="col-sm-8 mb-0">{{ appt.status_label }}</dd>
+        </dl>
+      </div>
+      <p class="small text-muted-2">Guarde o código acima. Com ele e o telefone informado, você pode <a href="{{ url_for('booking.lookup') }}">consultar ou cancelar</a> o agendamento. Link direto de acompanhamento:</p>
+      <div class="input-group mb-4 mx-auto">
+        <input class="form-control" id="manageLink" readonly value="{{ url_for('booking.manage', token=token, _external=True) }}" aria-label="Link de acompanhamento">
+        <button class="btn btn-outline-primary" type="button" data-copy="#manageLink">Copiar</button>
+      </div>
+      <a class="btn btn-primary" href="{{ url_for('public.index') }}">Voltar ao início</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

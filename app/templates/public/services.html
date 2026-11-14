@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Atendimentos{% endblock %}
+{% block description %}Atendimentos em Medicina de Família e Comunidade com {{ site.doctor_name }}: cuidado integral, preventivo e longitudinal.{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow mb-3">Atendimentos</span>
+    <h1 class="mb-3">Cuidado integral, em cada fase da vida</h1>
+    <p>Consultas com abordagem centrada na pessoa, foco em prevenção e acompanhamento contínuo.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    {% if services %}
+      <div class="section-head">
+        <h2>Tipos de atendimento disponíveis</h2>
+        <p>Escolha o tipo de atendimento no momento do agendamento.
+          {% if site.modality_presencial and site.modality_teleconsulta %}Modalidades: presencial e teleconsulta.
+          {% elif site.modality_teleconsulta %}Modalidade: teleconsulta.{% elif site.modality_presencial %}Modalidade: presencial.{% endif %}</p>
+      </div>
+      <div class="row g-4">
+        {% for s in services %}
+        <div class="col-md-6 col-lg-4 reveal">
+          <article class="card-soft d-flex flex-column">
+            <span class="icon-bubble">{{ icon(s.icon) }}</span>
+            <h3>{{ s.name }}</h3>
+            <p class="flex-grow-1">{{ s.description }}</p>
+            <div class="service-meta mt-3">
+              <span>{{ icon('clock') }} {{ s.duration_minutes }} min</span>
+              {% if s.show_price and s.price is not none %}<span>R$ {{ '%.2f'|format(s.price)|replace('.', ',') }}</span>{% endif %}
+            </div>
+            <a class="btn btn-sage btn-sm mt-3 align-self-start" href="{{ url_for('booking.start', servico=s.id) }}">Agendar {{ icon('arrow-right') }}</a>
+          </article>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="placeholder-note mb-5">{{ icon('info-circle') }} Os tipos de atendimento estão em configuração e serão publicados em breve.</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section section-sage">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow mb-3">Áreas de cuidado</span>
+      <h2>O que a Medicina de Família e Comunidade acompanha</h2>
+      <p>Possibilidades de cuidado da especialidade. A disponibilidade de cada atendimento é definida pela médica.</p>
+    </div>
+    <div class="row g-4">
+      {% for ic, title, text in care_areas %}
+      <div class="col-md-6 col-lg-3 reveal">
+        <article class="card-soft">
+          <span class="icon-bubble">{{ icon(ic) }}</span>
+          <h3>{{ title }}</h3>
+          <p>{{ text }}</p>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

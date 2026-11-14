@@ -1,0 +1,52 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Novo agendamento{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small"><li class="breadcrumb-item"><a href="{{ url_for('admin.appointments') }}">Agendamentos</a></li><li class="breadcrumb-item active" aria-current="page">Novo</li></ol></nav>
+<h1 class="h3 mb-4">Novo agendamento</h1>
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="panel-card">
+      <div class="panel-head"><h2>1. Paciente</h2></div>
+      <div class="panel-body">
+        {% if patient %}
+          <p class="mb-1"><strong>{{ patient.full_name }}</strong></p>
+          <p class="small text-muted-2 mb-3">{{ patient.phone }}{% if patient.email %} · {{ patient.email }}{% endif %}</p>
+          <a class="btn btn-sm btn-sage" href="{{ url_for('admin.appointment_new') }}">Trocar paciente</a>
+        {% else %}
+          <form method="get" role="search" class="mb-3">
+            <label class="form-label" for="q">Buscar por nome, telefone ou e-mail</label>
+            <div class="input-group"><input class="form-control" id="q" name="q" value="{{ q }}" minlength="2">
+              <button class="btn btn-primary">{{ icon('search') }}<span class="visually-hidden">Buscar</span></button></div>
+          </form>
+          {% if q %}
+            {% if results %}
+            <ul class="list-group mb-3">{% for p in results %}
+              <li class="list-group-item d-flex justify-content-between align-items-center"><span>{{ p.full_name }}<br><span class="small text-muted-2">{{ p.phone }}</span></span>
+                <a class="btn btn-sm btn-primary" href="{{ url_for('admin.appointment_new', paciente=p.id) }}">Selecionar</a></li>{% endfor %}</ul>
+            {% else %}<p class="small text-muted-2">Nenhum paciente encontrado.</p>{% endif %}
+          {% endif %}
+          {% if current_user.can('patients.edit') %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.patient_new', next='agendar') }}">{{ icon('person-plus') }} Cadastrar novo paciente</a>{% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="panel-card {{ 'opacity-50' if not patient }}">
+      <div class="panel-head"><h2>2. Atendimento, data e horário</h2></div>
+      <form method="post" class="panel-body" novalidate>
+        {{ form.csrf_token }}{{ form.patient_id() }}
+        <fieldset {{ 'disabled' if not patient }}>
+          {{ field(form.service_id) }}
+          <div class="row"><div class="col-sm-6">{{ field(form.date) }}</div><div class="col-sm-6">{{ field(form.time) }}</div></div>
+          <div id="slotSuggestions" class="mb-3" data-url="{{ url_for('admin.api_slots') }}" data-service-field="{{ form.service_id.id }}"
+               data-date-field="{{ form.date.id }}" data-time-field="{{ form.time.id }}"></div>
+          <div class="row"><div class="col-sm-6">{{ field(form.modality) }}</div><div class="col-sm-6">{{ field(form.status) }}</div></div>
+          {{ field(form.allow_outside_rules) }}
+          <button class="btn btn-primary">{{ icon('calendar-check') }} Criar agendamento</button>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

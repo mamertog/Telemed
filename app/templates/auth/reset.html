@@ -1,0 +1,12 @@
+{% extends "auth/base_auth.html" %}
+{% from "_macros.html" import field with context %}
+{% block title %}Nova senha{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Defina uma nova senha</h1>
+<form method="post" novalidate>
+  {{ form.csrf_token }}
+  {{ field(form.password, help="Mínimo de 12 caracteres. Prefira uma frase longa.") }}
+  {{ field(form.confirm) }}
+  <button class="btn btn-primary w-100">Salvar nova senha</button>
+</form>
+{% endblock %}

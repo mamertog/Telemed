@@ -1,0 +1,13 @@
+{% extends "auth/base_auth.html" %}
+{% from "_macros.html" import field with context %}
+{% block title %}Verificação em dois fatores{% endblock %}
+{% block content %}
+<h1 class="h4 mb-2">Verificação em dois fatores</h1>
+<p class="text-muted-2 small">Digite o código de 6 dígitos exibido no seu aplicativo autenticador.</p>
+<form method="post" novalidate>
+  {{ form.csrf_token }}
+  {{ field(form.code) }}
+  <button class="btn btn-primary w-100">Verificar</button>
+</form>
+<p class="small mt-3 mb-0">Perdeu acesso ao autenticador? Solicite a redefinição do MFA a um gestor de contas.</p>
+{% endblock %}

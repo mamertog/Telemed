@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge with context %}
+{% block title %}Seu agendamento{% endblock %}
+{% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block content %}
+<section class="section section-sage">
+  <div class="container">
+    <div class="booking-shell narrow p-4 p-md-5 mx-auto">
+      <span class="eyebrow mb-2">Agendamento {{ appt.reference }}</span>
+      <h1 class="h2 mb-4">Olá, {{ appt.patient.first_name }}</h1>
+      <div class="summary-box mb-4">
+        <dl class="row mb-0">
+          <dt class="col-sm-4">Status</dt><dd class="col-sm-8">{{ status_badge(appt.status) }}</dd>
+          <dt class="col-sm-4">Atendimento</dt><dd class="col-sm-8">{{ appt.service.name }}</dd>
+          <dt class="col-sm-4">Data</dt><dd class="col-sm-8">{{ appt.start_at|data_extenso }}</dd>
+          <dt class="col-sm-4">Horário</dt><dd class="col-sm-8 mb-0">{{ appt.start_at|hora }}</dd>
+        </dl>
+      </div>
+      {% if can_cancel %}
+      <form method="post" action="{{ url_for('booking.cancel', token=token) }}" data-confirm="Deseja realmente cancelar este agendamento?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-danger">{{ icon('x-circle') }} Cancelar agendamento</button>
+      </form>
+      {% elif appt.status in ('solicitado', 'confirmado') %}
+      <p class="text-muted-2">O prazo para cancelamento on-line ({{ site.patient_cancel_hours }} h de antecedência) terminou. Entre em contato com o consultório{% if site.phone %} pelo telefone {{ site.phone|telefone }}{% endif %}.</p>
+      {% endif %}
+      <hr class="my-4">
+      <a href="{{ url_for('booking.start') }}">Fazer nova solicitação</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

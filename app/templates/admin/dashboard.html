@@ -1,0 +1,82 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% from "admin/_month.html" import month_grid with context %}
+{% block title %}Visão geral{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div><h1 class="h3 mb-0">Olá, {{ current_user.name.split(' ')[0] }}</h1>
+    <p class="text-muted-2 mb-0 small">{{ today|data_extenso if today else '' }}</p></div>
+  {% if current_user.can('agenda.manage') and current_user.can('patients.view') %}
+  <a class="btn btn-primary" href="{{ url_for('admin.appointment_new') }}">{{ icon('plus-lg') }} Novo agendamento</a>{% endif %}
+</div>
+
+{% if setup_missing %}
+<div class="panel-card mb-4"><div class="panel-head"><h2>{{ icon('info-circle') }} Configuração inicial</h2></div>
+  <ul class="list-unstyled panel-body mb-0">
+    {% for label, link in setup_missing %}<li class="mb-1">{{ icon('dash-circle') }} <a href="{{ link }}">{{ label }}</a></li>{% endfor %}
+  </ul></div>
+{% endif %}
+
+{% if current_user.can('agenda.view') %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-2"><a class="kpi" href="{{ url_for('admin.agenda', view='dia') }}"><span class="icon-bubble">{{ icon('calendar-check') }}</span><div><div class="kpi-value">{{ today_count }}</div><div class="kpi-label">Hoje</div></div></a></div>
+  <div class="col-6 col-xl-2"><a class="kpi" href="{{ url_for('admin.agenda', view='semana') }}"><span class="icon-bubble">{{ icon('calendar-week') }}</span><div><div class="kpi-value">{{ week_count }}</div><div class="kpi-label">Nesta semana</div></div></a></div>
+  <div class="col-6 col-xl-2"><a class="kpi" href="{{ url_for('admin.appointments', status='solicitado') }}"><span class="icon-bubble">{{ icon('hourglass-split') }}</span><div><div class="kpi-value">{{ pending_count }}</div><div class="kpi-label">Aguardando confirmação</div></div></a></div>
+  <div class="col-6 col-xl-2"><a class="kpi" href="{{ url_for('admin.appointments', status='cancelado') }}"><span class="icon-bubble">{{ icon('x-circle') }}</span><div><div class="kpi-value">{{ cancelled_count }}</div><div class="kpi-label">Cancelamentos (30 dias)</div></div></a></div>
+  {% if patients_count is defined %}
+  <div class="col-6 col-xl-2"><a class="kpi" href="{{ url_for('admin.patients') }}"><span class="icon-bubble">{{ icon('people') }}</span><div><div class="kpi-value">{{ patients_count }}</div><div class="kpi-label">Pacientes</div></div></a></div>{% endif %}
+  <div class="col-6 col-xl-2"><div class="kpi"><span class="icon-bubble">{{ icon('clock') }}</span><div><div class="kpi-value">{{ free_today }}<span class="fs-6 text-muted-2"> / {{ free_week }}</span></div><div class="kpi-label">Horários livres hoje / 7 dias</div></div></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-7">
+    <div class="panel-card">
+      <div class="panel-head"><h2>{{ month.label }}</h2>
+        <div class="btn-group btn-group-sm">
+          <a class="btn btn-sage" href="{{ url_for('admin.agenda', view='mes', data=month.prev.isoformat()) }}" aria-label="Mês anterior">{{ icon('chevron-left') }}</a>
+          <a class="btn btn-sage" href="{{ url_for('admin.agenda', view='mes', data=month.next.isoformat()) }}" aria-label="Próximo mês">{{ icon('chevron-right') }}</a>
+        </div></div>
+      <div class="panel-body">{{ month_grid(month, today) }}</div>
+    </div>
+  </div>
+  <div class="col-xl-5">
+    {% if pending %}
+    <div class="panel-card mb-4">
+      <div class="panel-head"><h2>Aguardando confirmação</h2><a class="small" href="{{ url_for('admin.appointments', status='solicitado') }}">Ver todas</a></div>
+      <ul class="list-group list-group-flush">
+        {% for a in pending %}
+        <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+          <a class="text-decoration-none" href="{{ url_for('admin.appointment_detail', appt_id=a.id) }}"><strong>{{ a.patient.full_name }}</strong><br><span class="small text-muted-2">{{ a.start_at|datahora }} · {{ a.service.name }}</span></a>
+          {% if current_user.can('agenda.manage') %}
+          <form method="post" action="{{ url_for('admin.appointment_status', appt_id=a.id) }}" class="m-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="status" value="confirmado"><input type="hidden" name="reason" value="outro">
+            <input type="hidden" name="notify" value="y"><input type="hidden" name="next" value="{{ url_for('admin.dashboard') }}">
+            <button class="btn btn-sm btn-primary">{{ icon('check2') }} Confirmar</button>
+          </form>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    <div class="panel-card">
+      <div class="panel-head"><h2>Próximas consultas</h2><a class="small" href="{{ url_for('admin.appointments') }}">Ver agenda</a></div>
+      {% if upcoming %}
+      <ul class="list-group list-group-flush">
+        {% for a in upcoming %}
+        <li class="list-group-item"><a class="d-flex justify-content-between text-decoration-none text-reset" href="{{ url_for('admin.appointment_detail', appt_id=a.id) }}">
+          <span><strong>{{ a.start_at|data }} {{ a.start_at|hora }}</strong> — {{ a.patient.full_name }}<br><span class="small text-muted-2">{{ a.service.name }}</span></span>
+          {{ status_badge(a.status) }}</a></li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="panel-body text-muted-2 mb-0">Nenhuma consulta futura.</p>{% endif %}
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="panel-card panel-body">
+  <p class="mb-2">Sua conta de <strong>{{ current_user.role_label }}</strong> não possui acesso a agenda ou a dados de pacientes.</p>
+  <p class="mb-0 text-muted-2 small">Utilize o menu para gerenciar usuários, consultar a auditoria e verificar o status do sistema.</p>
+</div>
+{% endif %}
+{% endblock %}

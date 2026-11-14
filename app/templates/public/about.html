@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Sobre a médica{% endblock %}
+{% block description %}Conheça {{ site.doctor_name }}: graduação em Medicina pela UNICAMP e residência médica concluída em Medicina de Família e Comunidade.{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow mb-3">Sobre a médica</span>
+    <h1 class="mb-3">{{ site.doctor_name }}</h1>
+    <p>{{ site.crm }}{% if site.rqe and site.rqe_confirmed %} · RQE {{ site.rqe }}{% endif %}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <div class="portrait mb-4">
+          {% if has_photo %}
+            <img src="{{ url_for('public.doctor_photo') }}" alt="Fotografia de {{ site.doctor_name }}" width="400" height="500" loading="lazy">
+          {% else %}
+            <div class="hero-monogram" aria-hidden="true">JR</div>
+          {% endif %}
+        </div>
+        <div class="d-grid gap-3">
+          <div class="credential"><span class="icon-bubble">{{ icon('journal-medical') }}</span><div><strong>Graduação</strong><p class="mb-0 text-muted-2 small">{{ site.graduation }}</p></div></div>
+          <div class="credential"><span class="icon-bubble">{{ icon('people') }}</span><div><strong>Residência</strong><p class="mb-0 text-muted-2 small">{{ site.residency }}</p></div></div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="prose">
+          <p class="lead">{{ site.about_intro }}</p>
+          <p>{{ site.about_approach }}</p>
+
+          <h2>Abordagem centrada na pessoa</h2>
+          <p>Cada pessoa traz uma história, valores e prioridades próprios. A consulta é organizada para compreender não apenas sintomas, mas também o contexto de vida, as preocupações e as expectativas de quem está sendo atendido.</p>
+
+          <h2>Continuidade e coordenação do cuidado</h2>
+          <p>O acompanhamento ao longo do tempo permite conhecer melhor cada paciente, perceber mudanças precocemente e evitar intervenções desnecessárias. Quando outros profissionais são necessários, o cuidado é coordenado para que as informações e as decisões permaneçam integradas.</p>
+
+          <h2>Promoção da saúde e prevenção</h2>
+          <p>Prevenir é parte central do cuidado. As orientações sobre rastreamentos, vacinação e hábitos de vida seguem recomendações baseadas em evidências e são adaptadas a cada fase da vida e às escolhas de cada pessoa.</p>
+
+          <h2>Relação médico-paciente</h2>
+          <p>Uma relação de confiança, com comunicação clara e respeito à autonomia, é a base de um bom cuidado. Dúvidas são bem-vindas, e as decisões são compartilhadas.</p>
+        </div>
+        <div class="mt-5 d-flex flex-column flex-sm-row gap-3">
+          <a class="btn btn-primary btn-lg" href="{{ url_for('booking.start') }}">{{ icon('calendar-check') }} Agendar consulta</a>
+          <a class="btn btn-outline-primary btn-lg" href="{{ url_for('public.services') }}">Ver atendimentos</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

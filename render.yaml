@@ -1,0 +1,72 @@
+# Blueprint do Render: Web Service + PostgreSQL gerenciado.
+# Render Dashboard → New → Blueprint → selecione este repositório.
+databases:
+  - name: medico-db
+    plan: basic-256mb          # plano pago: backups e recuperação (PITR) — ajuste conforme contratação
+    databaseName: medico
+    user: medico
+    region: virginia            # ajuste a região se necessário
+    postgresMajorVersion: "16"
+    ipAllowList: []             # somente acesso interno
+
+services:
+  - type: web
+    name: medico-web
+    runtime: python
+    plan: starter
+    region: virginia
+    buildCommand: pip install -r requirements.txt
+    preDeployCommand: flask --app wsgi db upgrade && flask --app wsgi seed-defaults && python -m scripts.setup_render
+    startCommand: gunicorn wsgi:app --workers 2 --threads 4 --timeout 60 --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: APP_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: medico-db
+          property: connectionString
+      - key: PUBLIC_BASE_URL
+        sync: false             # ex.: https://www.seudominio.com.br
+      - key: EMAIL_PROVIDER
+        value: none
+      - key: EMAIL_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+
+  # Lembretes de consulta (opcional; Cron Jobs são pagos no Render)
+  - type: cron
+    name: medico-lembretes
+    runtime: python
+    plan: starter
+    region: virginia
+    schedule: "0 * * * *"       # a cada hora (UTC)
+    buildCommand: pip install -r requirements.txt
+    startCommand: flask --app wsgi send-reminders
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: APP_ENV
+        value: production
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: medico-web
+          envVarKey: SECRET_KEY
+      - key: DATABASE_URL
+        fromDatabase:
+          name: medico-db
+          property: connectionString
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: EMAIL_PROVIDER
+        value: none
+      - key: EMAIL_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false

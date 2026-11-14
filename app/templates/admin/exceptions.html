@@ -1,0 +1,39 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Bloqueios e férias{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Bloqueios, férias e feriados</h1>
+<p class="text-muted-2 small mb-4">Períodos bloqueados deixam de ser oferecidos no agendamento online. Agendamentos já existentes não são alterados automaticamente.</p>
+{% if conflicts %}
+<div class="alert alert-warning"><strong>Agendamentos ativos no período bloqueado:</strong>
+  <ul class="mb-0">{% for a in conflicts %}<li><a href="{{ url_for('admin.appointment_detail', appt_id=a.id) }}">{{ a.start_at|datahora }} — {{ a.patient.full_name }}</a></li>{% endfor %}</ul></div>
+{% endif %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="panel-card table-responsive">
+      <div class="panel-head"><h2>Bloqueios vigentes e futuros</h2></div>
+      <table class="table align-middle">
+        <thead><tr><th scope="col">Início</th><th scope="col">Fim</th><th scope="col">Motivo</th>{% if current_user.can('agenda.block') %}<th scope="col"><span class="visually-hidden">Ações</span></th>{% endif %}</tr></thead>
+        <tbody>{% for x in items %}
+          <tr><td>{{ x.start_at|datahora }}</td><td>{{ x.end_at|datahora }}</td><td>{{ x.reason }}</td>
+            {% if current_user.can('agenda.block') %}<td class="text-end"><form method="post" action="{{ url_for('admin.exception_delete', eid=x.id) }}" data-confirm="Remover este bloqueio?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger">Remover</button></form></td>{% endif %}</tr>
+        {% else %}<tr><td colspan="4" class="text-muted-2">Nenhum bloqueio futuro.</td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </div>
+  {% if current_user.can('agenda.block') %}
+  <div class="col-lg-5">
+    <div class="panel-card">
+      <div class="panel-head"><h2>Novo bloqueio</h2></div>
+      <form method="post" class="panel-body" novalidate>
+        {{ form.csrf_token }}
+        <div class="row"><div class="col-6">{{ field(form.start_date) }}</div><div class="col-6">{{ field(form.start_time) }}</div></div>
+        <div class="row"><div class="col-6">{{ field(form.end_date) }}</div><div class="col-6">{{ field(form.end_time) }}</div></div>
+        {{ field(form.reason) }}
+        <button class="btn btn-primary">{{ icon('slash-circle') }} Bloquear período</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

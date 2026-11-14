@@ -1,0 +1,17 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Configurações · Dados profissionais{% endblock %}
+{% block content %}{% include "admin/_settings_tabs.html" %}
+<div class="alert alert-info col-xl-9">{{ icon('info-circle') }} Informações regulamentadas. Alterações exigem confirmação de senha e ficam registradas na auditoria. A apresentação como especialista (com RQE) só é exibida após o número ser informado e confirmado.</div>
+<div class="panel-card panel-body col-xl-9">
+  <form method="post" novalidate autocomplete="off">
+    {{ form.csrf_token }}
+    <div class="row"><div class="col-md-8">{{ field(form.doctor_name) }}</div><div class="col-md-4">{{ field(form.crm) }}</div></div>
+    {{ field(form.graduation) }}
+    {{ field(form.residency) }}
+    <div class="row"><div class="col-md-4">{{ field(form.rqe) }}</div><div class="col-md-8 pt-md-4">{{ field(form.rqe_confirmed) }}</div></div>
+    {{ field(form.current_password) }}
+    <button class="btn btn-primary">Salvar dados profissionais</button>
+  </form>
+</div>
+{% endblock %}

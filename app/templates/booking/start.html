@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field with context %}
+{% block title %}Agendar consulta{% endblock %}
+{% block description %}Agende sua consulta com {{ site.doctor_name }} on-line: escolha o atendimento, a data e o horário disponível.{% endblock %}
+{% block content %}
+<section class="page-hero pb-5">
+  <div class="container">
+    <span class="eyebrow mb-3">Agendamento online</span>
+    <h1 class="mb-3">Agendar consulta</h1>
+    <p>Escolha o tipo de atendimento, a data e o horário. Sua solicitação será confirmada pela equipe.</p>
+  </div>
+</section>
+
+<section class="pb-5">
+  <div class="container">
+    {% if not available %}
+      <div class="booking-shell p-4 p-md-5 text-center">
+        <span class="icon-bubble mx-auto mb-3">{{ icon('hourglass-split') }}</span>
+        <h2 class="h3">Agenda on-line em preparação</h2>
+        <p class="text-muted-2 mb-4">No momento, não há horários disponíveis para agendamento pelo site.{% if site.phone or wa_public or site.email %} Entre em contato pelos canais do consultório.{% endif %}</p>
+        <a class="btn btn-outline-primary" href="{{ url_for('public.contact') }}">Ver contato</a>
+      </div>
+    {% else %}
+    {% set personal_errors = form.full_name.errors or form.phone.errors or form.email.errors or form.birth_date.errors or form.privacy_ack.errors %}
+    <noscript><div class="alert alert-warning">Para escolher data e horário, habilite o JavaScript do navegador.</div></noscript>
+    <div class="booking-shell" id="booking"
+         data-days-url="{{ url_for('booking.api_days') }}"
+         data-slots-url="{{ url_for('booking.api_slots') }}"
+         data-today="{{ today.isoformat() }}"
+         data-initial-service="{{ form.service_id.data or request.args.get('servico', '') }}"
+         data-initial-start="{{ form.start.data or '' }}"
+         data-initial-step="{{ 3 if (personal_errors and form.start.data) else (2 if form.service_id.data else 1) }}">
+      <ol class="stepper" aria-label="Etapas do agendamento">
+        <li data-step-ind="1" class="is-current"><span class="n">1</span>Atendimento</li>
+        <li data-step-ind="2"><span class="n">2</span>Data e horário</li>
+        <li data-step-ind="3"><span class="n">3</span>Seus dados</li>
+      </ol>
+      <div class="visually-hidden" aria-live="polite" id="live"></div>
+
+      <form method="post" action="{{ url_for('booking.submit') }}" novalidate id="bookingForm">
+        {{ form.csrf_token }}
+        {{ form.service_id(id="f-service") }}
+        {{ form.start(id="f-start") }}
+
+        <!-- Etapa 1 -->
+        <div class="booking-step" data-step="1">
+          <h2 class="step-title" tabindex="-1">Qual atendimento você procura?</h2>
+          <fieldset>
+            <legend class="visually-hidden">Tipo de atendimento</legend>
+            <div class="row g-3">
+              {% for s in services %}
+              <div class="col-md-6">
+                <label class="service-option">
+                  <input type="radio" name="svc_choice" value="{{ s.id }}" data-name="{{ s.name }}" data-duration="{{ s.duration_minutes }}">
+                  <span class="card-soft">
+                    <span class="icon-bubble">{{ icon(s.icon) }}</span>
+                    <span>
+                      <strong class="d-block">{{ s.name }}</strong>
+                      {% if s.description %}<span class="d-block text-muted-2 small mt-1">{{ s.description }}</span>{% endif %}
+                      <span class="service-meta"><span>{{ icon('clock') }} {{ s.duration_minutes }} min</span>
+                        {% if s.show_price and s.price is not none %}<span>R$ {{ '%.2f'|format(s.price)|replace('.', ',') }}</span>{% endif %}</span>
+                    </span>
+                  </span>
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+          {% for e in form.service_id.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          <div class="d-flex justify-content-end mt-4">
+            <button type="button" class="btn btn-primary btn-lg" data-next="2" disabled id="toStep2">Continuar {{ icon('arrow-right') }}</button>
+          </div>
+        </div>
+
+        <!-- Etapa 2 -->
+        <div class="booking-step" data-step="2" hidden>
+          <h2 class="step-title" tabindex="-1">Escolha a data e o horário</h2>
+          <div class="row g-4">
+            <div class="col-lg-6">
+              <div class="cal" id="calendar">
+                <div class="cal-head">
+                  <button type="button" class="cal-nav" id="calPrev" aria-label="Mês anterior">{{ icon('chevron-left') }}</button>
+                  <h3 id="calLabel" aria-live="polite">—</h3>
+                  <button type="button" class="cal-nav" id="calNext" aria-label="Próximo mês">{{ icon('chevron-right') }}</button>
+                </div>
+                <div class="cal-grid" role="presentation">
+                  {% for d in weekdays_short %}<div class="cal-dow" aria-hidden="true">{{ d }}</div>{% endfor %}
+                </div>
+                <div class="cal-grid" id="calDays" role="group" aria-label="Dias do mês"></div>
+                <p id="calStatus" class="small text-muted-2 mt-3" role="status"></p>
+                <button type="button" id="calRetry" class="btn btn-outline-primary btn-sm" hidden>Tentar novamente</button>
+                <div class="cal-legend" aria-hidden="true"><span>Com horários</span><span class="sel">Selecionado</span></div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <h3 class="h5 mb-3" id="slotsTitle">Selecione um dia no calendário</h3>
+              <div class="slots" id="slots" role="group" aria-labelledby="slotsTitle"></div>
+              <p class="text-muted-2 small mt-3 mb-0">Horários no fuso de Brasília (America/São_Paulo).</p>
+            </div>
+          </div>
+          {% for e in form.start.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          <div class="d-flex justify-content-between mt-4">
+            <button type="button" class="btn btn-outline-primary" data-prev="1">{{ icon('arrow-left') }} Voltar</button>
+            <button type="button" class="btn btn-primary btn-lg" data-next="3" disabled id="toStep3">Continuar {{ icon('arrow-right') }}</button>
+          </div>
+        </div>
+
+        <!-- Etapa 3 -->
+        <div class="booking-step" data-step="3" hidden>
+          <h2 class="step-title" tabindex="-1">Seus dados de contato</h2>
+          <div class="row g-4">
+            <div class="col-lg-7">
+              <p class="text-muted-2 small">Solicitamos apenas os dados necessários para organizar o atendimento. <strong>Não informe sintomas ou dados de saúde.</strong></p>
+              {{ field(form.full_name) }}
+              <div class="row">
+                <div class="col-sm-6">{{ field(form.phone, help="Ex.: (19) 99999-9999") }}</div>
+                <div class="col-sm-6">
+                  {{ field(form.email, help="Para receber a confirmação." if site.require_email else "Opcional — para receber a confirmação por e-mail.") }}
+                </div>
+              </div>
+              {% if site.ask_birth_date %}{{ field(form.birth_date, help="Opcional.") }}{% endif %}
+              {% if site.modality_presencial and site.modality_teleconsulta %}
+              <fieldset class="mb-3">
+                <legend class="form-label fs-6">Modalidade</legend>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="modality" id="mod-p" value="presencial" {{ 'checked' if form.modality.data != 'teleconsulta' }}><label class="form-check-label" for="mod-p">Presencial</label></div>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="modality" id="mod-t" value="teleconsulta" {{ 'checked' if form.modality.data == 'teleconsulta' }}><label class="form-check-label" for="mod-t">Teleconsulta</label></div>
+              </fieldset>
+              {% else %}
+              <input type="hidden" name="modality" value="{{ 'teleconsulta' if site.modality_teleconsulta and not site.modality_presencial else 'presencial' }}">
+              {% endif %}
+              <div class="hp-field" aria-hidden="true"><label for="website">Não preencha</label>{{ form.website(tabindex="-1", autocomplete="off") }}</div>
+              <div class="summary-box small mb-3">
+                <p class="mb-2"><strong>Aviso de privacidade.</strong> Seus dados serão usados exclusivamente para agendar, confirmar e lembrar sua consulta, com acesso restrito à equipe autorizada. Base legal: procedimentos para o atendimento solicitado por você (LGPD, art. 7º, V). Não utilizamos seus dados para publicidade.</p>
+                <a href="{{ url_for('public.privacy') }}#aviso" target="_blank" rel="noopener">Ler a Política de Privacidade completa</a>
+              </div>
+              {{ field(form.privacy_ack) }}
+              {{ field(form.whatsapp_opt_in, help="Opcional e independente do agendamento. Pode ser revogado a qualquer momento.") }}
+            </div>
+            <div class="col-lg-5">
+              <div class="summary-box">
+                <h3 class="h6 mb-3">Resumo da solicitação</h3>
+                <dl class="mb-0">
+                  <dt>Atendimento</dt><dd id="sumService">—</dd>
+                  <dt>Data</dt><dd id="sumDate">—</dd>
+                  <dt>Horário</dt><dd id="sumTime" class="mb-0">—</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between mt-4 gap-2">
+            <button type="button" class="btn btn-outline-primary" data-prev="2">{{ icon('arrow-left') }} Voltar</button>
+            <button type="submit" class="btn btn-primary btn-lg">{{ icon('check-circle') }} Confirmar solicitação</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <p class="text-center small text-muted-2 mt-3">Já possui um agendamento? <a href="{{ url_for('booking.lookup') }}">Consulte ou cancele</a>.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/booking.js') }}" defer></script>{% endblock %}

@@ -1,0 +1,25 @@
+{% from "_macros.html" import flashes, field with context %}<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}Acesso restrito{% endblock %} · Painel</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="auth-body">
+  <main class="auth-wrap" id="conteudo">
+    <div class="auth-card">
+      <a class="brand mb-4" href="{{ url_for('public.index') }}"><span class="brand-mark" aria-hidden="true">JR</span>
+        <span><span class="brand-name">{{ site.doctor_name }}</span><span class="brand-crm">Área restrita</span></span></a>
+      {{ flashes() }}
+      {% block content %}{% endblock %}
+    </div>
+    <p class="small text-muted-2 mt-3 text-center"><a href="{{ url_for('public.index') }}">← Voltar ao site</a></p>
+  </main>
+  <script src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/site.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Disponibilidade{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Disponibilidade recorrente</h1>
+<p class="text-muted-2 small mb-4">Defina os dias e horários de atendimento. Os horários oferecidos no site são gerados a cada {{ site.slot_step_minutes }} minutos dentro destes períodos, respeitando a duração de cada atendimento{% if site.buffer_minutes %} e {{ site.buffer_minutes }} min de intervalo entre consultas{% endif %}. <a href="{{ url_for('admin.settings_booking') }}">Ajustar parâmetros</a>.</p>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="panel-card table-responsive">
+      <table class="table align-middle">
+        <thead><tr><th scope="col">Dia</th><th scope="col">Horário</th><th scope="col">Intervalo</th><th scope="col">Situação</th>{% if current_user.can('agenda.configure') %}<th scope="col"><span class="visually-hidden">Ações</span></th>{% endif %}</tr></thead>
+        <tbody>{% for r in rules %}
+          <tr class="{{ 'text-muted-2' if not r.active }}">
+            <td>{{ weekdays[r.weekday]|capitalize }}</td>
+            <td>{{ r.start_time.strftime('%H:%M') }} – {{ r.end_time.strftime('%H:%M') }}</td>
+            <td>{{ r.break_start.strftime('%H:%M') ~ ' – ' ~ r.break_end.strftime('%H:%M') if r.break_start else '—' }}</td>
+            <td>{{ 'Ativo' if r.active else 'Inativo' }}</td>
+            {% if current_user.can('agenda.configure') %}
+            <td class="text-end text-nowrap">
+              <form class="d-inline" method="post" action="{{ url_for('admin.availability_toggle', rid=r.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-sage">{{ 'Desativar' if r.active else 'Ativar' }}</button></form>
+              <form class="d-inline" method="post" action="{{ url_for('admin.availability_delete', rid=r.id) }}" data-confirm="Remover este período?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger">Excluir</button></form>
+            </td>{% endif %}
+          </tr>{% else %}<tr><td colspan="5" class="text-muted-2">Nenhum período cadastrado. O agendamento online fica indisponível até que haja ao menos um.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% if current_user.can('agenda.configure') %}
+  <div class="col-lg-5">
+    <div class="panel-card">
+      <div class="panel-head"><h2>Adicionar período</h2></div>
+      <form method="post" class="panel-body" novalidate>
+        {{ form.csrf_token }}
+        {{ field(form.weekday) }}
+        <div class="row"><div class="col-6">{{ field(form.start_time) }}</div><div class="col-6">{{ field(form.end_time) }}</div></div>
+        <div class="row"><div class="col-6">{{ field(form.break_start) }}</div><div class="col-6">{{ field(form.break_end) }}</div></div>
+        <button class="btn btn-primary">{{ icon('plus-lg') }} Adicionar</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

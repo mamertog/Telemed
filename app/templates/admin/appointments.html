@@ -1,0 +1,35 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Agendamentos{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+  <h1 class="h3 mb-0">Agendamentos</h1>
+  {% if current_user.can('agenda.manage') and current_user.can('patients.view') %}
+  <a class="btn btn-primary" href="{{ url_for('admin.appointment_new') }}">{{ icon('plus-lg') }} Novo agendamento</a>{% endif %}
+</div>
+<form class="panel-card panel-body mb-3 row g-2 align-items-end" method="get">
+  <div class="col-sm-4 col-lg-3"><label class="form-label small" for="st">Status</label>
+    <select class="form-select form-select-sm" id="st" name="status"><option value="">Todos</option>
+      {% for k, v in statuses.items() %}<option value="{{ k }}" {{ 'selected' if status == k }}>{{ v }}</option>{% endfor %}</select></div>
+  <div class="col-sm-4 col-lg-3"><label class="form-label small" for="de">De</label><input class="form-control form-control-sm" type="date" id="de" name="de" value="{{ d_from.isoformat() if d_from else '' }}"></div>
+  <div class="col-sm-4 col-lg-3"><label class="form-label small" for="ate">Até</label><input class="form-control form-control-sm" type="date" id="ate" name="ate" value="{{ d_to.isoformat() if d_to else '' }}"></div>
+  <div class="col-lg-3 d-flex gap-2"><button class="btn btn-sm btn-primary">Filtrar</button><a class="btn btn-sm btn-sage" href="{{ url_for('admin.appointments') }}">Limpar</a></div>
+</form>
+<p class="small text-muted-2">{% if not (status or d_from or d_to) %}Exibindo agendamentos a partir de hoje.{% endif %} {{ page.total }} resultado(s).</p>
+<div class="panel-card table-responsive">
+  <table class="table table-hover align-middle">
+    <thead><tr><th scope="col">Data e hora</th><th scope="col">Paciente</th><th scope="col">Atendimento</th><th scope="col">Origem</th><th scope="col">Código</th><th scope="col">Status</th></tr></thead>
+    <tbody>
+      {% for a in page.items %}
+      <tr>
+        <td><a href="{{ url_for('admin.appointment_detail', appt_id=a.id) }}">{{ a.start_at|data }} {{ a.start_at|hora }}</a></td>
+        <td>{{ a.patient.full_name }}</td><td>{{ a.service.name }}</td>
+        <td class="small">{{ 'Site' if a.origin == 'online' else 'Painel' }}</td>
+        <td><code>{{ a.reference }}</code></td><td>{{ status_badge(a.status) }}</td>
+      </tr>
+      {% else %}<tr><td colspan="6" class="text-muted-2">Nenhum agendamento encontrado.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ pagination(page, 'admin.appointments') }}
+{% endblock %}

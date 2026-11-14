@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Erro {{ code }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container text-center">
+    <p class="eyebrow justify-content-center">Erro {{ code }}</p>
+    <h1 class="h2 mb-3">{{ message }}</h1>
+    <a class="btn btn-primary mt-3" href="{{ url_for('public.index') }}">Ir para o início</a>
+  </div>
+</section>
+{% endblock %}

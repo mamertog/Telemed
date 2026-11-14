@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Política de Privacidade{% endblock %}
+{% block description %}Como os dados pessoais são tratados no site e no agendamento online de {{ site.doctor_name }}.{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow mb-3">Privacidade</span>
+    <h1 class="mb-3">Política de Privacidade e aviso de privacidade do agendamento</h1>
+    <p>Versão {{ site.privacy_version }}</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="prose" id="aviso">
+      <p>Esta política explica, de forma transparente, quais dados pessoais são tratados neste site, para quais finalidades e quais são os seus direitos, nos termos da Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018 — LGPD).</p>
+
+      <h2>1. Quem é a controladora</h2>
+      <p>A controladora dos dados é {{ site.doctor_name }} ({{ site.crm }}).{% if site.email %} Para assuntos de privacidade, utilize o e-mail <a href="mailto:{{ site.email }}">{{ site.email }}</a>.{% else %} Para assuntos de privacidade, utilize os canais de contato informados na página de contato.{% endif %}</p>
+
+      <h2>2. Quais dados coletamos no agendamento</h2>
+      <p>Somente os dados mínimos necessários para organizar o atendimento:</p>
+      <ul>
+        <li>nome completo e telefone (obrigatórios);</li>
+        <li>e-mail, quando informado ou necessário para confirmação eletrônica;</li>
+        <li>data de nascimento, apenas quando solicitada por necessidade operacional;</li>
+        <li>tipo de atendimento, data e horário escolhidos.</li>
+      </ul>
+      <p><strong>O formulário de agendamento não solicita sintomas, diagnósticos, exames ou qualquer outra informação clínica</strong>, e o CPF não é exigido. Informações de saúde são tratadas exclusivamente no contexto da consulta, sob sigilo profissional.</p>
+      <p>Por segurança, registramos também dados técnicos mínimos (como um identificador cifrado do endereço IP e data/hora da solicitação), utilizados para prevenção de abusos.</p>
+
+      <h2>3. Finalidades e bases legais</h2>
+      <ul>
+        <li><strong>Agendamento, confirmação, reagendamento, cancelamento e lembretes de consulta</strong> — procedimentos preliminares e execução da relação de atendimento solicitada pelo próprio titular (art. 7º, V, da LGPD) e, quando aplicável, tutela da saúde (art. 11, II, “f”).</li>
+        <li><strong>Manutenção do cadastro administrativo e do histórico de agendamentos</strong> — execução da relação de atendimento e cumprimento de obrigações legais e regulatórias (art. 7º, II e V).</li>
+        <li><strong>Segurança do sistema, registros de acesso e prevenção a fraudes</strong> — legítimo interesse e cumprimento de obrigação legal (art. 7º, II e IX).</li>
+        <li><strong>Contato pelo WhatsApp</strong> — somente mediante autorização opcional e específica do titular (art. 7º, I), que pode ser revogada a qualquer momento sem prejuízo do agendamento.</li>
+      </ul>
+
+      <h2>4. Compartilhamento</h2>
+      <p>Os dados não são vendidos nem utilizados para publicidade. Este site não utiliza ferramentas de analytics ou rastreamento publicitário. Os dados podem ser processados por fornecedores estritamente necessários à operação — hospedagem da aplicação e do banco de dados e, quando habilitado, serviço de envio de e-mails transacionais —, que atuam como operadores e recebem apenas o necessário. Mensagens enviadas não contêm informações clínicas.</p>
+
+      <h2>5. Armazenamento, segurança e retenção</h2>
+      <p>Os dados são armazenados em banco de dados com acesso restrito à equipe autorizada, protegido por autenticação com dois fatores, controle de permissões, conexões criptografadas e registros de auditoria. Cadastros sem atividade são mantidos pelo período de {{ site.retention_years }} ano(s) após o último atendimento, salvo obrigação legal de guarda por prazo maior, e depois são anonimizados ou eliminados.</p>
+
+      <h2>6. Seus direitos</h2>
+      <p>Você pode solicitar confirmação da existência de tratamento, acesso, correção, anonimização, bloqueio ou eliminação de dados desnecessários, portabilidade, informação sobre compartilhamentos e revogação do consentimento, quando aplicável, além de apresentar reclamação à Autoridade Nacional de Proteção de Dados (ANPD).</p>
+
+      <h2>7. Cookies</h2>
+      <p>Utilizamos apenas cookies estritamente necessários ao funcionamento do site (por exemplo, proteção de formulários e sessão da área administrativa). Não utilizamos cookies de publicidade ou de rastreamento.</p>
+
+      <h2>8. Atualizações</h2>
+      <p>Esta política pode ser atualizada. A versão vigente é sempre a publicada nesta página, e a versão aceita em cada agendamento é registrada.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

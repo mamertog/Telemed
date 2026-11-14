@@ -1,0 +1,15 @@
+{% extends "auth/base_auth.html" %}
+{% from "_macros.html" import field with context %}
+{% block title %}Configurar autenticação em dois fatores{% endblock %}
+{% block content %}
+<h1 class="h4 mb-2">Configure a autenticação em dois fatores</h1>
+<p class="text-muted-2 small">Obrigatória para contas internas. Escaneie o QR code com um aplicativo autenticador (Google Authenticator, Microsoft Authenticator, 1Password, Authy etc.) e digite o código gerado.</p>
+<div class="qr-box mx-auto mb-3">{{ qr_svg }}</div>
+<details class="small mb-3"><summary>Não consegue escanear? Digite a chave manualmente</summary>
+  <code class="d-block mt-2 user-select-all">{{ secret }}</code></details>
+<form method="post" novalidate>
+  {{ form.csrf_token }}
+  {{ field(form.code) }}
+  <button class="btn btn-primary w-100">Ativar e entrar</button>
+</form>
+{% endblock %}

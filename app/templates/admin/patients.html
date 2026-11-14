@@ -1,0 +1,37 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field, status_badge, pagination with context %}
+{% block title %}Pacientes{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+  <h1 class="h3 mb-0">Pacientes</h1>
+  <div class="d-flex gap-2">
+    {% if current_user.can('patients.export') %}<a class="btn btn-sage" href="{{ url_for('admin.patients_export') }}">{{ icon('download') }} Exportar CSV</a>{% endif %}
+    {% if current_user.can('patients.edit') %}<a class="btn btn-primary" href="{{ url_for('admin.patient_new') }}">{{ icon('person-plus') }} Novo paciente</a>{% endif %}
+  </div>
+</div>
+<form class="panel-card panel-body mb-3 row g-2 align-items-end" method="get" role="search">
+  <div class="col-md-6"><label class="form-label small" for="q">Buscar por nome, telefone ou e-mail</label><input class="form-control form-control-sm" id="q" name="q" value="{{ q }}"></div>
+  <div class="col-md-3"><label class="form-label small" for="status">Situação</label>
+    <select class="form-select form-select-sm" id="status" name="status"><option value="">Todas</option>
+      <option value="ativo" {{ 'selected' if status == 'ativo' }}>Ativo</option><option value="inativo" {{ 'selected' if status == 'inativo' }}>Inativo</option></select></div>
+  <div class="col-md-3 d-flex gap-2"><button class="btn btn-sm btn-primary">Filtrar</button><a class="btn btn-sm btn-sage" href="{{ url_for('admin.patients') }}">Limpar</a></div>
+</form>
+<p class="small text-muted-2">{{ page.total }} paciente(s).</p>
+<div class="panel-card table-responsive">
+  <table class="table table-hover align-middle">
+    <thead><tr><th scope="col">Nome</th><th scope="col">Telefone</th><th scope="col">E-mail</th><th scope="col" class="text-center">Agendados</th><th scope="col" class="text-center">Concluídos</th><th scope="col">Próxima consulta</th><th scope="col">Situação</th></tr></thead>
+    <tbody>
+      {% for p in page.items %}{% set st = stats.get(p.id, {}) %}
+      <tr>
+        <td><a href="{{ url_for('admin.patient_detail', pid=p.id) }}">{{ p.full_name }}</a></td>
+        <td>{{ p.phone }}</td><td class="small">{{ p.email or '—' }}</td>
+        <td class="text-center">{{ st.get('total', 0) }}</td><td class="text-center">{{ st.get('done', 0) }}</td>
+        <td class="small">{{ st.get('next')|datahora if st.get('next') else '—' }}</td>
+        <td><span class="badge {{ 'text-bg-light' if p.status == 'inativo' else 'bg-success-subtle text-success-emphasis' }}">{{ p.status|capitalize }}</span></td>
+      </tr>
+      {% else %}<tr><td colspan="7" class="text-muted-2">Nenhum paciente encontrado.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ pagination(page, 'admin.patients') }}
+{% endblock %}
