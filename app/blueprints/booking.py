@@ -13,7 +13,7 @@ from ..models import ACTIVE_STATUSES, ST_CANCELLED, Appointment, Service
 from ..services import notifications
 from ..services import scheduling
 from ..services import settings as site_settings
-from ..utils import fmt_long_date, normalize_phone, now_utc, sha256_hex, today_local
+from ..utils import fmt_date, fmt_time, whatsapp_link, fmt_long_date, normalize_phone, now_utc, sha256_hex, today_local
 
 bp = Blueprint("booking", __name__, url_prefix="/agendar")
 
@@ -123,7 +123,14 @@ def success():
     appt = db.session.get(Appointment, data["id"])
     if not appt:
         return redirect(url_for("booking.start"))
-    return render_template("booking/success.html", appt=appt, token=data["token"])
+    message = (
+        f"Olá! Fiz um agendamento para {fmt_date(appt.start_at)} "
+        f"às {fmt_time(appt.start_at)}. Meu código é {appt.reference}. "
+        "Aguardo a confirmação."
+    )
+    booking_whatsapp = whatsapp_link(site_settings.get("whatsapp"), message)
+    return render_template("booking/success.html", appt=appt, token=data["token"],
+                           booking_whatsapp=booking_whatsapp)
 
 
 def _appointment_by_token(token: str) -> Appointment:

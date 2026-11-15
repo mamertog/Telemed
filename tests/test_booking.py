@@ -213,3 +213,34 @@ def test_doctor_alert_without_patient_email(client, agenda, monkeypatch):
     assert sent[0][0] == "doctor@example.com"
     assert "https://clinic.example/painel/" in sent[0][2]
     assert "/agendar/agendamento/" not in sent[0][2]
+
+
+def test_success_whatsapp_message(client, app, agenda):
+    import html
+    import re
+    from urllib.parse import urlparse, parse_qs
+    from app.services import settings
+    with app.app_context():
+        settings.set_many({"whatsapp": "19999990000"})
+        db.session.commit()
+    assert client.post("/agendar/confirmar", data=booking_payload(agenda)).status_code == 302
+    page = client.get("/agendar/sucesso").get_data(as_text=True)
+    match = re.search(r'href="(https://wa.me/[^"]+)"', page)
+    assert match
+    link = urlparse(html.unescape(match.group(1)))
+    assert link.path == "/5519999990000"
+    message = parse_qs(link.query)["text"][0]
+    assert "09:00" in message
+    assert "Paciente Ficticio" not in message
+    assert "ficticio@example.com" not in message
+    assert "/agendar/agendamento/" not in message
+    with app.app_context():
+        appt = db.session.execute(sa.select(Appointment)).scalar_one()
+        assert appt.reference in message
+        assert appt.status == "solicitado"
+
+
+def test_success_without_whatsapp_number(client, agenda):
+    assert client.post("/agendar/confirmar", data=booking_payload(agenda)).status_code == 302
+    page = client.get("/agendar/sucesso").get_data(as_text=True)
+    assert "Avisar o consult" not in page

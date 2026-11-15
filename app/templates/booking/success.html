@@ -19,6 +19,14 @@
           <dt class="col-sm-4">Status</dt><dd class="col-sm-8 mb-0">{{ appt.status_label }}</dd>
         </dl>
       </div>
+      {% if booking_whatsapp %}
+      <div class="summary-box mb-4">
+        <a class="btn btn-primary" href="{{ booking_whatsapp }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">
+          {{ icon('whatsapp') }} Avisar o consultório pelo WhatsApp
+        </a>
+        <p class="small text-muted-2 mt-3 mb-0">O WhatsApp abrirá com uma mensagem pronta. Toque em Enviar para avisar o consultório. Seu agendamento já está salvo e aguarda confirmação da equipe.</p>
+      </div>
+      {% endif %}
       <p class="small text-muted-2">Guarde o código acima. Com ele e o telefone informado, você pode <a href="{{ url_for('booking.lookup') }}">consultar ou cancelar</a> o agendamento. Link direto de acompanhamento:</p>
       <div class="input-group mb-4 mx-auto">
         <input class="form-control" id="manageLink" readonly value="{{ url_for('booking.manage', token=token, _external=True) }}" aria-label="Link de acompanhamento">
