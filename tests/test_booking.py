@@ -240,7 +240,11 @@ def test_success_whatsapp_message(client, app, agenda):
         assert appt.status == "solicitado"
 
 
-def test_success_without_whatsapp_number(client, agenda):
+def test_success_without_whatsapp_number(client, app, agenda):
+    from app.services import settings
+    with app.app_context():
+        settings.set_many({"whatsapp": ""})
+        db.session.commit()
     assert client.post("/agendar/confirmar", data=booking_payload(agenda)).status_code == 302
     page = client.get("/agendar/sucesso").get_data(as_text=True)
     assert "Avisar o consult" not in page
