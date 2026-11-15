@@ -32,6 +32,8 @@ services:
           property: connectionString
       - key: PUBLIC_BASE_URL
         sync: false             # ex.: https://www.seudominio.com.br
+      - key: BOOKING_ALERT_EMAIL
+        value: julianagrosa97@gmail.com
       - key: EMAIL_PROVIDER
         value: none
       - key: EMAIL_API_KEY

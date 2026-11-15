@@ -198,3 +198,18 @@ def test_lookup_by_reference_and_phone(client, app, agenda):
     assert r.status_code == 302 and "/agendar/agendamento/" in r.headers["Location"]
     r = client.post("/agendar/consultar", data={"reference": ref, "phone": "11900000000"})
     assert r.status_code == 200 and "Não foi possível localizar" in r.get_data(as_text=True)
+
+
+def test_doctor_alert_without_patient_email(client, agenda, monkeypatch):
+    from app.services import notifications
+    sent = []
+    client.application.config.update(EMAIL_PROVIDER="brevo", EMAIL_API_KEY="fake", EMAIL_FROM="sender@example.com", BOOKING_ALERT_EMAIL="doctor@example.com", PUBLIC_BASE_URL="https://clinic.example")
+    monkeypatch.setattr(notifications, "send_email", lambda to, subject, body: sent.append((to, subject, body)) or True)
+    payload = booking_payload(agenda)
+    payload["email"] = ""
+    response = client.post("/agendar/confirmar", data=payload)
+    assert response.status_code == 302
+    assert len(sent) == 1
+    assert sent[0][0] == "doctor@example.com"
+    assert "https://clinic.example/painel/" in sent[0][2]
+    assert "/agendar/agendamento/" not in sent[0][2]

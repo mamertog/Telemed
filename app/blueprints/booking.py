@@ -103,6 +103,7 @@ def submit():
             except ValueError as exc:
                 errors.append(str(exc))
             else:
+                notifications.notify_doctor(appt)
                 notifications.notify(appt, "requested", token=token)
                 session["booking_done"] = {"id": str(appt.id), "token": token}
                 return redirect(url_for("booking.success"))

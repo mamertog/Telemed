@@ -51,6 +51,7 @@ class Config:
 
     # E-mail transacional
     EMAIL_PROVIDER = os.environ.get("EMAIL_PROVIDER", "none").lower()  # none|console|resend|brevo
+    BOOKING_ALERT_EMAIL = os.environ.get("BOOKING_ALERT_EMAIL", "").strip()
     EMAIL_API_KEY = os.environ.get("EMAIL_API_KEY", "")
     EMAIL_FROM = os.environ.get("EMAIL_FROM", "")
     EMAIL_FROM_NAME = os.environ.get("EMAIL_FROM_NAME", "Consultório Dra. Juliana Gonçalves Rosa")

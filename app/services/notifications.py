@@ -131,3 +131,31 @@ def send_due_reminders() -> int:
         appt.reminder_sent_at = now
         db.session.commit()
     return sent
+
+
+def notify_doctor(appt: Appointment) -> bool:
+    """Notify the configured doctor independently of the patient's email."""
+    recipient = current_app.config.get("BOOKING_ALERT_EMAIL", "")
+    if not recipient or not provider_configured():
+        return False
+    try:
+        path = url_for("admin.appointment_detail", appt_id=appt.id)
+        base = current_app.config.get("PUBLIC_BASE_URL", "").rstrip("/")
+        link = base + path if base else url_for("admin.appointment_detail", appt_id=appt.id, _external=True)
+        subject = f"Novo agendamento recebido - {appt.reference}"
+        body = (
+            f"Uma nova consulta foi solicitada pelo site.\n\n"
+            f"Referencia: {appt.reference}\n"
+            f"Atendimento: {appt.service.name}\n"
+            f"Data: {fmt_date(appt.start_at)}\n"
+            f"Horario: {fmt_time(appt.start_at)} (Brasilia)\n\n"
+            f"Entre no painel para revisar e confirmar: {link}\n"
+        )
+        ok = send_email(recipient, subject, body)
+        add_event(appt, "notificacao", details={"tipo": "novo_agendamento_medica", "canal": "email", "enviado": ok})
+        db.session.commit()
+        return ok
+    except Exception:
+        db.session.rollback()
+        log.exception("Falha ao avisar a medica sobre novo agendamento")
+        return False
