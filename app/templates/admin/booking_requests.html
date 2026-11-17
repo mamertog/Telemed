@@ -1,0 +1,12 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import pagination with context %}
+{% block title %}Solicitações de consulta{% endblock %}
+{% block content %}
+<h1 class="h3">Solicitações de consulta</h1>
+<p class="text-muted-2">Pedidos recebidos pelo formulário. A data e o horário ainda serão combinados com o paciente.</p>
+<form method="get" class="d-flex gap-2 mb-4"><label for="requestFilter" class="visually-hidden">Situação</label><select name="status" id="requestFilter" class="form-select"><option value="">Todas as situações</option>{% for value, label in statuses.items() %}<option value="{{ value }}" {{ 'selected' if value == status }}>{{ label }}</option>{% endfor %}</select><button class="btn btn-primary">Filtrar</button></form>
+<div class="panel-card table-responsive"><table class="table mb-0"><thead><tr><th>Referência</th><th>Paciente</th><th>Telefone</th><th>Recebida em</th><th>Situação</th><th></th></tr></thead><tbody>
+{% for item in page.items %}<tr><td>{{ item.reference }}</td><td>{{ item.patient.full_name }}</td><td>{{ item.patient.phone|telefone }}</td><td>{{ item.created_at|data }} {{ item.created_at|hora }}</td><td>{{ statuses[item.status] }}</td><td><a href="{{ url_for('admin.booking_request_detail', request_id=item.id) }}">Abrir</a></td></tr>
+{% else %}<tr><td colspan="6" class="p-4 text-center">Nenhuma solicitação encontrada.</td></tr>{% endfor %}</tbody></table></div>
+{{ pagination(page, 'admin.booking_requests') }}
+{% endblock %}

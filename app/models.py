@@ -324,3 +324,18 @@ class MediaAsset(db.Model):
     data = sa.Column(sa.LargeBinary, nullable=False)
     sha256 = sa.Column(sa.String(64), nullable=False)
     updated_at = sa.Column(sa.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
+
+
+class BookingRequest(db.Model):
+    """Contact request without a reserved appointment time."""
+    __tablename__ = "booking_requests"
+    id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    reference = sa.Column(sa.String(12), nullable=False, unique=True)
+    patient_id = sa.Column(UUID(as_uuid=True), sa.ForeignKey("patients.id", ondelete="RESTRICT"), nullable=False, index=True)
+    email = sa.Column(sa.String(255))
+    submission_key = sa.Column(sa.String(64), nullable=False, unique=True)
+    status = sa.Column(sa.String(20), nullable=False, default="pendente", index=True)
+    created_at = sa.Column(sa.DateTime(timezone=True), nullable=False, default=utcnow, index=True)
+    updated_at = sa.Column(sa.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
+    patient = db.relationship("Patient")
+    __table_args__ = (sa.CheckConstraint("status IN ('pendente','em_contato','concluida','cancelada')", name="ck_booking_requests_status"),)

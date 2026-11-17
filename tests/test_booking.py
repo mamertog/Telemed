@@ -18,12 +18,12 @@ from .conftest import booking_payload, slot_iso
 
 def test_booking_unavailable_without_configuration(client):
     html = client.get("/agendar/").get_data(as_text=True)
-    assert "Agenda on-line em preparação" in html
+    assert 'id="requestForm"' in html and 'id="calDays"' not in html
 
 
 def test_calendar_and_free_slots(client, agenda):
     html = client.get("/agendar/").get_data(as_text=True)
-    assert "Consulta de teste" in html and 'id="calDays"' in html
+    assert 'id="requestForm"' in html and 'id="calDays"' not in html
     d = agenda["date"]
     r = client.get(f"/agendar/api/dias?servico={agenda['service_id']}&mes={d.strftime('%Y-%m')}")
     assert r.status_code == 200

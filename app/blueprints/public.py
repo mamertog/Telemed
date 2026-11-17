@@ -35,13 +35,13 @@ FAQ = [
      "É a área da medicina dedicada ao cuidado integral e contínuo das pessoas, em todas as fases da vida. "
      "Aborda a maior parte das necessidades de saúde e coordena o cuidado com outros profissionais quando necessário."),
     ("Como funciona o agendamento online?",
-     "Você escolhe o tipo de atendimento, a data e um horário disponível e informa alguns dados de contato. "
-     "A solicitação é registrada e, em seguida, confirmada pela equipe."),
+     "Você preenche seus dados de contato e clica em Solicitar pelo WhatsApp. "
+     "Os dados ficam salvos no site. Envie a mensagem no WhatsApp para combinar a data e o horário com a equipe."),
     ("Preciso informar sintomas ou exames no agendamento?",
      "Não. O formulário de agendamento solicita apenas dados de contato. Informações de saúde são tratadas "
      "exclusivamente durante a consulta."),
     ("Posso cancelar ou consultar meu agendamento?",
-     "Sim. Guarde o código de referência exibido ao final da solicitação. Com ele e o telefone informado, "
+     "Para acompanhar sua solicitação ou combinar alterações, fale com a equipe pelo WhatsApp. Se já recebeu um agendamento com data e código, "
      "você pode consultar ou cancelar o agendamento dentro do prazo indicado."),
     ("Como meus dados são protegidos?",
      "Os dados são utilizados apenas para a organização do atendimento, com acesso restrito à equipe autorizada. "

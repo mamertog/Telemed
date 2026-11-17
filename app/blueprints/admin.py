@@ -19,14 +19,14 @@ from sqlalchemy.orm import joinedload
 
 from ..extensions import db
 from ..forms import (
-    AdminAppointmentForm, BookingSettingsForm, ContactSettingsForm, ExceptionForm, PatientForm, PhotoForm,
+    BookingRequestStatusForm, AdminAppointmentForm, BookingSettingsForm, ContactSettingsForm, ExceptionForm, PatientForm, PhotoForm,
     ProfessionalSettingsForm, RescheduleForm, RuleForm, ServiceForm, StatusForm, TextsSettingsForm,
     UserEditForm, UserForm, build_templates_form,
 )
 from ..models import (
     ACTIVE_STATUSES, ALLOWED_TRANSITIONS, CANCEL_REASONS, ROLE_DOCTOR, ROLE_LABELS, ROLE_TECH_ADMIN,
     ST_CANCELLED, ST_COMPLETED, ST_CONFIRMED, ST_REQUESTED, STATUS_LABELS, Appointment, AuditLog,
-    AvailabilityException, AvailabilityRule, MediaAsset, Patient, PrivacyRecord, Service, User,
+    BookingRequest, AvailabilityException, AvailabilityRule, MediaAsset, Patient, PrivacyRecord, Service, User,
 )
 from ..security import (
     audit, decrypt_secret, hash_password, new_session_token, password_problems, permission_required,
@@ -89,6 +89,7 @@ def dashboard():
         week_start = today - timedelta(days=today.weekday())
         w0, w1 = _local(week_start, time.min), _local(week_start + timedelta(days=7), time.min)
         count = lambda *conds: db.session.scalar(sa.select(sa.func.count(Appointment.id)).where(*conds))  # noqa: E731
+        ctx["requests_pending"] = db.session.scalar(sa.select(sa.func.count(BookingRequest.id)).where(BookingRequest.status == "pendente"))
         ctx.update(
             today_count=count(Appointment.start_at >= t0, Appointment.start_at < t1, Appointment.status.in_(ACTIVE_STATUSES)),
             week_count=count(Appointment.start_at >= w0, Appointment.start_at < w1, Appointment.status.in_(ACTIVE_STATUSES)),
@@ -899,3 +900,40 @@ def audit_logs():
         q = q.where(AuditLog.action.contains(action[:60]))
     page = db.paginate(q, page=request.args.get("page", 1, type=int), per_page=40, error_out=False)
     return render_template("admin/audit.html", page=page, action=action)
+
+
+REQUEST_STATUSES = {"pendente": "Pendente", "em_contato": "Em contato", "concluida": "Concluída", "cancelada": "Cancelada"}
+
+
+@bp.route("/solicitacoes")
+@permission_required("agenda.view")
+def booking_requests():
+    status = request.args.get("status", "")
+    query = sa.select(BookingRequest).options(joinedload(BookingRequest.patient))
+    if status in REQUEST_STATUSES:
+        query = query.where(BookingRequest.status == status)
+    page = db.paginate(query.order_by(BookingRequest.created_at.desc()), per_page=25, error_out=False)
+    return render_template("admin/booking_requests.html", page=page, status=status, statuses=REQUEST_STATUSES)
+
+
+@bp.route("/solicitacoes/<uuid:request_id>", methods=["GET", "POST"])
+@permission_required("agenda.view")
+def booking_request_detail(request_id):
+    item = db.session.get(BookingRequest, request_id)
+    if item is None:
+        abort(404)
+    form = BookingRequestStatusForm()
+    if request.method == "POST":
+        if not current_user.can("agenda.manage"):
+            abort(403)
+        if form.validate_on_submit():
+            item.status = form.status.data
+            audit("solicitacao_atualizada", "booking_request", item.id)
+            db.session.commit()
+            flash("Situação da solicitação atualizada.", "success")
+            return redirect(url_for("admin.booking_request_detail", request_id=item.id))
+    else:
+        form.status.data = item.status
+        audit("solicitacao_visualizada", "booking_request", item.id, commit=True)
+    wa = whatsapp_link(item.patient.phone_norm, f"Olá, {item.patient.first_name}! Recebemos sua solicitação {item.reference}. Vamos combinar sua consulta?") if item.patient.whatsapp_opt_in else None
+    return render_template("admin/booking_request_detail.html", item=item, form=form, statuses=REQUEST_STATUSES, whatsapp=wa)

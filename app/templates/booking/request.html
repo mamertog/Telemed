@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field with context %}
+{% block title %}Agendar consulta{% endblock %}
+{% block content %}
+<section class="section section-sage"><div class="container">
+<div class="booking-shell narrow p-4 p-md-5 mx-auto">
+<span class="eyebrow mb-2">Vamos conversar</span>
+<h1 class="h2">Agendar consulta</h1>
+{% if available %}
+<p class="text-muted-2">Preencha seus dados e solicite seu agendamento pelo WhatsApp. A equipe combinará com você a data e o horário.</p>
+<form method="post" action="{{ url_for('booking.request_submit') }}" id="requestForm">
+{{ form.csrf_token }}{{ form.submission_key }}
+{{ field(form.full_name) }}
+{{ field(form.phone, help="Informe seu número com DDD.") }}
+{{ field(form.email, help="Opcional.") }}
+{% if site.ask_birth_date %}{{ field(form.birth_date, help="Opcional.") }}{% endif %}
+<div class="hp-field" aria-hidden="true">{{ form.website(tabindex="-1", autocomplete="off") }}</div>
+<p class="small text-muted-2">Usamos seus dados para organizar o atendimento. Não informe sintomas ou dados de saúde. <a href="{{ url_for('public.privacy') }}" target="_blank" rel="noopener">Leia o aviso de privacidade</a>.</p>
+{{ field(form.privacy_ack) }}{{ field(form.whatsapp_opt_in) }}
+{% for e in form.submission_key.errors %}<p class="text-danger">Atualize esta página e tente novamente.</p>{% endfor %}
+<button type="submit" class="btn btn-primary btn-lg w-100">{{ icon('whatsapp') }} Solicitar pelo WhatsApp</button>
+<p class="small text-muted-2 mt-3 mb-0">Seus dados serão salvos antes de abrir o WhatsApp. Toque em Enviar no WhatsApp para concluir a mensagem. A data e o horário serão combinados com a equipe.</p>
+<p id="requestStatus" class="small mt-3" role="status"></p>
+</form>
+{% else %}<p>As solicitações pelo site estão temporariamente indisponíveis. <a href="{{ url_for('public.contact') }}">Entre em contato com o consultório</a>.</p>{% endif %}
+</div></div></section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/request.js') }}" defer></script>{% endblock %}

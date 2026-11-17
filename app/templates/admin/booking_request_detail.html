@@ -1,0 +1,16 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import field with context %}
+{% block title %}Solicitação {{ item.reference }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin.booking_requests') }}">Voltar às solicitações</a>
+<h1 class="h3 mt-3">Solicitação {{ item.reference }}</h1>
+<p>Recebida em {{ item.created_at|data }} às {{ item.created_at|hora }}. A data e o horário da consulta ainda serão combinados.</p>
+<div class="panel-card panel-body mb-4"><dl><dt>Paciente</dt><dd>{{ item.patient.full_name }}</dd><dt>Telefone</dt><dd>{{ item.patient.phone|telefone }}</dd><dt>E-mail</dt><dd>{{ item.email or 'Não informado' }}</dd><dt>Situação</dt><dd>{{ statuses[item.status] }}</dd></dl>
+{% if current_user.can('patients.view') %}<a class="btn btn-outline-primary" href="{{ url_for('admin.patient_detail', pid=item.patient_id) }}">Ver cadastro do paciente</a>{% endif %}
+{% if whatsapp %}<a class="btn btn-primary" href="{{ whatsapp }}" target="_blank" rel="noopener noreferrer">{{ icon('whatsapp') }} Conversar pelo WhatsApp</a>{% else %}<p class="small mt-3 mb-0">O paciente não autorizou contato pelo WhatsApp no formulário.</p>{% endif %}
+</div>
+{% if current_user.can('agenda.manage') %}
+<div class="panel-card panel-body mb-4"><h2 class="h5">Gerenciar solicitação</h2><form method="post">{{ form.csrf_token }}{{ field(form.status) }}<button class="btn btn-primary">Salvar situação</button></form></div>
+{% if current_user.can('patients.view') %}<a class="btn btn-outline-primary" href="{{ url_for('admin.appointment_new', paciente=item.patient_id) }}">{{ icon('calendar-check') }} Registrar consulta com data e horário combinados</a><p class="small mt-2">Depois de registrar a consulta, marque esta solicitação como concluída.</p>{% endif %}
+{% endif %}
+{% endblock %}

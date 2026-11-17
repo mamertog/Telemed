@@ -5,15 +5,15 @@ import secrets
 from datetime import date, timedelta
 
 import sqlalchemy as sa
-from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 
 from ..extensions import db, limiter
-from ..forms import BookingForm, LookupForm
-from ..models import ACTIVE_STATUSES, ST_CANCELLED, Appointment, Service
+from ..forms import BookingForm, LookupForm, BookingRequestForm
+from ..models import ACTIVE_STATUSES, ST_CANCELLED, Appointment, Service, BookingRequest, PrivacyRecord
 from ..services import notifications
 from ..services import scheduling
 from ..services import settings as site_settings
-from ..utils import fmt_date, fmt_time, whatsapp_link, fmt_long_date, normalize_phone, now_utc, sha256_hex, today_local
+from ..utils import fmt_date, fmt_time, whatsapp_link, fmt_long_date, normalize_phone, normalize_email, hashed_ip, new_reference, now_utc, sha256_hex, today_local
 
 bp = Blueprint("booking", __name__, url_prefix="/agendar")
 
@@ -30,11 +30,12 @@ def booking_available() -> bool:
 
 @bp.route("/", methods=["GET"])
 def start():
-    form = BookingForm()
-    services = _bookable_services()
-    available = booking_available()
-    return render_template("booking/start.html", form=form, services=services, available=available,
-                           today=today_local())
+    form = BookingRequestForm()
+    key = secrets.token_urlsafe(32)
+    session["request_submission_key"] = key
+    form.submission_key.data = key
+    return render_template("booking/request.html", form=form,
+                           available=bool(site_settings.get("booking_enabled")))
 
 
 @bp.route("/api/dias")
@@ -187,3 +188,71 @@ def lookup():
         # Mensagem genérica: não revela se o código existe.
         flash("Não foi possível localizar um agendamento com os dados informados.", "warning")
     return render_template("booking/lookup.html", form=form)
+
+
+@bp.route("/solicitar", methods=["POST"])
+@limiter.limit("8/minute;40/hour")
+def request_submit():
+    if not site_settings.get("booking_enabled"):
+        abort(404)
+    form = BookingRequestForm()
+    if not form.validate_on_submit():
+        if request.accept_mimetypes.best == "application/json":
+            return jsonify({"errors": form.errors}), 422
+        return render_template("booking/request.html", form=form, available=True), 422
+    key = form.submission_key.data
+    if key != session.get("request_submission_key"):
+        abort(400)
+    # Serialize identical submissions; retrying cannot create another request.
+    db.session.execute(sa.text("SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))"), {"key": key})
+    item = db.session.execute(sa.select(BookingRequest).where(BookingRequest.submission_key == key)).scalar_one_or_none()
+    if item is None:
+        patient = scheduling.find_matching_patient(form.full_name.data, normalize_phone(form.phone.data))
+        if patient is None:
+            patient = scheduling.build_patient(form.full_name.data, form.phone.data, form.email.data,
+                form.birth_date.data if site_settings.get("ask_birth_date") else None, form.whatsapp_opt_in.data)
+            db.session.add(patient)
+        email = normalize_email(form.email.data)
+        if email and not patient.email:
+            patient.email, patient.email_norm = email, email
+        item = BookingRequest(reference=new_reference(), patient=patient, email=email, submission_key=key)
+        db.session.add(item)
+        db.session.flush()
+        evidence = {"ip_hash": hashed_ip(), "canal": "solicitacao_consulta"}
+        db.session.add(PrivacyRecord(patient_id=patient.id, record_type="aviso_privacidade_ciencia",
+            document_version=site_settings.get("privacy_version"), granted=True, evidence=evidence))
+        if form.whatsapp_opt_in.data:
+            patient.whatsapp_opt_in = True
+            db.session.add(PrivacyRecord(patient_id=patient.id, record_type="consentimento_contato_whatsapp",
+                document_version=site_settings.get("privacy_version"), granted=True, evidence=evidence))
+        db.session.commit()
+    else:
+        db.session.commit()
+    session["request_done"] = str(item.id)
+    next_url = url_for("booking.request_success")
+    if request.accept_mimetypes.best == "application/json":
+        return jsonify({"saved": True, "whatsapp": _request_whatsapp(item), "next": next_url})
+    return redirect(next_url)
+
+
+def _request_whatsapp(item):
+    return whatsapp_link(site_settings.get("whatsapp"),
+        f"Olá! Gostaria de agendar uma consulta com a Dra. Juliana. "
+        f"Preenchi meus dados no site. Minha referência é {item.reference}. "
+        "Podemos combinar uma data e horário?")
+
+
+@bp.route("/solicitacao-enviada")
+def request_success():
+    ident = session.get("request_done")
+    item = db.session.get(BookingRequest, ident) if ident else None
+    if item is None:
+        return redirect(url_for("booking.start"))
+    return render_template("booking/request_success.html", item=item, whatsapp=_request_whatsapp(item))
+
+
+@bp.after_request
+def private_request_pages(response):
+    if request.endpoint in {"booking.start", "booking.request_submit", "booking.request_success"}:
+        response.headers["Cache-Control"] = "no-store"
+    return response

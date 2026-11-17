@@ -18,6 +18,8 @@
 {% endif %}
 
 {% if current_user.can('agenda.view') %}
+<div class="panel-card panel-body mb-4"><strong>Solicitações sem data marcada: {{ requests_pending }}</strong><a class="btn btn-primary ms-3" href="{{ url_for('admin.booking_requests', status='pendente') }}">Ver solicitações</a></div>
+
 <div class="row g-3 mb-4">
   <div class="col-6 col-xl-2"><a class="kpi" href="{{ url_for('admin.agenda', view='dia') }}"><span class="icon-bubble">{{ icon('calendar-check') }}</span><div><div class="kpi-value">{{ today_count }}</div><div class="kpi-label">Hoje</div></div></a></div>
   <div class="col-6 col-xl-2"><a class="kpi" href="{{ url_for('admin.agenda', view='semana') }}"><span class="icon-bubble">{{ icon('calendar-week') }}</span><div><div class="kpi-value">{{ week_count }}</div><div class="kpi-label">Nesta semana</div></div></a></div>

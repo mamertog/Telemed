@@ -280,3 +280,13 @@ class UserEditForm(FlaskForm):
     name = StringField("Nome", validators=[DataRequired(MSG_REQ), Length(max=120)])
     role = SelectField("Papel", choices=list(ROLE_LABELS.items()))
     is_active_account = BooleanField("Conta ativa")
+
+
+class BookingRequestForm(BookingForm):
+    service_id = HiddenField(validators=[Optional()])
+    start = HiddenField(validators=[Optional()])
+    submission_key = HiddenField(validators=[DataRequired(MSG_REQ), Length(min=32, max=64)])
+
+
+class BookingRequestStatusForm(FlaskForm):
+    status = SelectField("Situação", choices=[("pendente", "Pendente"), ("em_contato", "Em contato"), ("concluida", "Concluída"), ("cancelada", "Cancelada")], validators=[DataRequired(MSG_REQ)])

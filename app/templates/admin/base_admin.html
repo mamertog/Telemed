@@ -19,6 +19,7 @@
     <a class="side-link {{ 'active' if ep == 'admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">{{ icon('grid-1x2') }} Visão geral</a>
     {% if current_user.can('agenda.view') %}
       <div class="side-label">Agenda</div>
+      <a class="side-link {{ 'active' if ep.startswith('admin.booking_request') }}" href="{{ url_for('admin.booking_requests') }}">{{ icon('whatsapp') }} Solicitações</a>
       <a class="side-link {{ 'active' if ep == 'admin.agenda' }}" href="{{ url_for('admin.agenda') }}">{{ icon('calendar3') }} Calendário</a>
       <a class="side-link {{ 'active' if ep.startswith('admin.appointment') }}" href="{{ url_for('admin.appointments') }}">{{ icon('clipboard-check') }} Agendamentos</a>
       <a class="side-link {{ 'active' if ep.startswith('admin.availability') }}" href="{{ url_for('admin.availability') }}">{{ icon('clock') }} Disponibilidade</a>

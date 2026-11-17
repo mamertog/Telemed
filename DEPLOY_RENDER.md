@@ -10,3 +10,7 @@
 8. Confira /health e /agendar/. Ajuste PUBLIC_BASE_URL para a URL final do servico.
 
 O pacote nao inclui .env, ambiente virtual, banco local nem dados de pacientes. O banco da Render inicia vazio. Nao envie esses arquivos ao Git.
+
+## Fluxo simplificado de solicitacoes
+
+O botao Agendar consulta abre um formulario de contato. O POST /agendar/solicitar grava paciente, solicitacao e ciencia de privacidade em uma transacao antes de oferecer o link WhatsApp. Nao reserva data ou horario. O paciente precisa tocar em Enviar no WhatsApp. Os pedidos ficam em Painel > Solicitacoes, com filtros e atualizacao de situacao; a equipe registra a consulta na agenda apos combinar o horario. A migracao 0004 adiciona a tabela booking_requests sem alterar os agendamentos existentes.

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Solicitação recebida{% endblock %}
+{% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block content %}<section class="section section-sage"><div class="container"><div class="booking-shell narrow p-4 p-md-5 mx-auto text-center">
+<div class="success-mark">{{ icon('check-circle') }}</div>
+<h1 class="h2">Seus dados foram salvos!</h1>
+<p>Sua referência é <strong>{{ item.reference }}</strong>. A equipe combinará a data e o horário com você. Ainda não há uma consulta marcada.</p>
+{% if whatsapp %}<a class="btn btn-primary btn-lg" href="{{ whatsapp }}" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ icon('whatsapp') }} Enviar solicitação pelo WhatsApp</a>
+<p class="small text-muted-2 mt-3">O WhatsApp abrirá com a mensagem pronta. Toque em Enviar. Seus dados continuam salvos mesmo se você não enviar a mensagem.</p>{% else %}<p>A equipe recebeu sua solicitação no painel e poderá entrar em contato pelo telefone informado.</p>{% endif %}
+<a class="d-block mt-4" href="{{ url_for('public.index') }}">Voltar ao início</a>
+</div></div></section>{% endblock %}
