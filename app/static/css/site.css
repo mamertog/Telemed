@@ -278,3 +278,6 @@ code { color: var(--petrol); }
 
 .photo-preview { width: min(100%, 280px); aspect-ratio: 4/5; object-fit: cover; border-radius: 16px; }
 .cal-day:focus-visible, .slot-btn:focus-visible { outline: 3px solid var(--petrol); outline-offset: 3px; }
+
+/* Keep the face visible when a vertical portrait fills the photo frame. */
+.portrait img, .hero-arch img { object-position: center 22%; }
